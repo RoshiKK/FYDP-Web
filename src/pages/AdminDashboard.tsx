@@ -2214,7 +2214,6 @@ const AdminDashboard: React.FC = () => {
                     <MenuItem value="Chippa Ambulance">
                       Chippa Ambulance
                     </MenuItem>
-                    <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -2418,7 +2417,6 @@ const AdminDashboard: React.FC = () => {
                     <MenuItem value="Chippa Ambulance">
                       Chippa Ambulance
                     </MenuItem>
-                    <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
