@@ -663,6 +663,7 @@ const AdminDashboard: React.FC = () => {
     setViewDialogOpen(false); // This closes the view details dialog
     setAssignDepartment("");
     setSelectedIncidents([]);
+    setSelectedIncident(null); // Also clear the selected incident
     
   } catch (error: any) {
     console.error("Error approving incident:", error);
@@ -697,6 +698,7 @@ const AdminDashboard: React.FC = () => {
     setViewDialogOpen(false); // Close view details dialog
     setRejectReason("");
     setSelectedIncidents([]);
+    setSelectedIncident(null); // Also clear the selected incident
   } catch (error: any) {
     showSnackbar(`Error: ${error.message}`, "error");
   }
