@@ -84,12 +84,8 @@ import {
 } from "../contexts/AuthContext";
 import IncidentMap from "../components/IncidentMap";
 
-// Recharts imports
-
 // Date utilities
 import { format, formatDistanceToNow, parseISO } from "date-fns";
-
-
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -105,8 +101,6 @@ function TabPanel(props: TabPanelProps) {
     </div>
   );
 }
-
-
 
 const statusColors: Record<string, string> = {
   pending: "#F59E0B",
@@ -464,15 +458,11 @@ const AdminDashboard: React.FC = () => {
   const [,] = useState("");
   const [] = useState("");
   const [restrictDays, setRestrictDays] = useState(7);
-  const [] = useState<null | HTMLElement>(
-    null
-  );
+  const [] = useState<null | HTMLElement>(null);
   const [selectedActionUser, setSelectedActionUser] = useState<User | null>(
     null
   );
-  const [, setBulkMenuAnchor] = useState<null | HTMLElement>(
-    null
-  );
+  const [, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalIncidents: 0,
@@ -498,15 +488,19 @@ const AdminDashboard: React.FC = () => {
     drivingLicense: "",
     status: "active",
   });
-  
+
   // User Management States
   const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User>>({});
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
-  const [selectedUserForMenu, setSelectedUserForMenu] = useState<User | null>(null);
-  
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [selectedUserForMenu, setSelectedUserForMenu] = useState<User | null>(
+    null
+  );
+
   // Load data on mount
   useEffect(() => {
     loadDashboardData();
@@ -563,9 +557,6 @@ const AdminDashboard: React.FC = () => {
     setRejectDialogOpen(true);
   };
 
-
-
-
   const handleBulkAction = (action: string) => {
     if (selectedIncidents.length === 0) {
       showSnackbar("No incidents selected", "warning");
@@ -613,13 +604,8 @@ const AdminDashboard: React.FC = () => {
     (inc) => inc.status !== "pending"
   );
 
-  // Prepare chart data
-
-
-
-
   // ========== USER MANAGEMENT FUNCTIONS ==========
-  
+
   const handleViewUserDetails = (user: User) => {
     setSelectedUser(user);
     setViewUserDialogOpen(true);
@@ -634,7 +620,11 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
       try {
         await deleteUser(userId);
         showSnackbar("User deleted successfully", "success");
@@ -692,7 +682,10 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>, user: User) => {
+  const handleUserMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    user: User
+  ) => {
     setUserMenuAnchor(event.currentTarget);
     setSelectedUserForMenu(user);
   };
@@ -1123,10 +1116,12 @@ const AdminDashboard: React.FC = () => {
                 startIcon={<PersonAddIcon />}
                 onClick={() => setUserDialogOpen(true)}
                 sx={{
-                  background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+                  background:
+                    "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
                   color: "white",
                   "&:hover": {
-                    background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+                    background:
+                      "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
                   },
                 }}
               >
@@ -1134,7 +1129,7 @@ const AdminDashboard: React.FC = () => {
               </Button>
             </Box>
           </Box>
-          
+
           {users.length === 0 ? (
             <Box textAlign="center" py={6}>
               <Typography color="text.secondary" gutterBottom>
@@ -1177,16 +1172,23 @@ const AdminDashboard: React.FC = () => {
                     <TableRow key={user._id} hover>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={2}>
-                          <Avatar sx={{ 
-                            bgcolor: getRoleColor(user.role),
-                            width: 40,
-                            height: 40
-                          }}>
+                          <Avatar
+                            sx={{
+                              bgcolor: getRoleColor(user.role),
+                              width: 40,
+                              height: 40,
+                            }}
+                          >
                             {getRoleIcon(user.role)}
                           </Avatar>
                           <Box>
-                            <Typography fontWeight={600}>{user.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography fontWeight={600}>
+                              {user.name}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               ID: {user._id?.substring(0, 8)}
                             </Typography>
                           </Box>
@@ -1208,7 +1210,10 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {user.department || user.hospital || user.ambulanceService || "-"}
+                          {user.department ||
+                            user.hospital ||
+                            user.ambulanceService ||
+                            "-"}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -1318,10 +1323,253 @@ const AdminDashboard: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           {selectedIncident && (
-            <Box>
-              {/* Incident details content remains the same */}
+            <Box sx={{ mt: 2 }}>
               <Grid container spacing={3}>
-                {/* ... existing incident details ... */}
+                {/* Incident Overview */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Location
+                    </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        bgcolor: "#f8fafc",
+                        borderRadius: 2,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <LocationIcon fontSize="small" color="primary" />
+                        <Typography variant="body1" fontWeight={500}>
+                          {selectedIncident.location?.address ||
+                            "Unknown location"}
+                        </Typography>
+                      </Box>
+                      {selectedIncident.location?.coordinates && (
+                        <Typography variant="caption" color="text.secondary">
+                          Coordinates:{" "}
+                          {Array.isArray(selectedIncident.location.coordinates)
+                            ? `${selectedIncident.location.coordinates[0]?.toFixed(
+                                6
+                              )}, ${selectedIncident.location.coordinates[1]?.toFixed(
+                                6
+                              )}`
+                            : `${selectedIncident.location.coordinates.lat?.toFixed(
+                                6
+                              )}, ${selectedIncident.location.coordinates.lng?.toFixed(
+                                6
+                              )}`}
+                        </Typography>
+                      )}
+                    </Paper>
+                  </Box>
+
+                  {/* Reporter Information */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Reported By
+                    </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        bgcolor: "#f8fafc",
+                        borderRadius: 2,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Typography variant="body1" fontWeight={500}>
+                        {selectedIncident.reportedBy?.name || "Anonymous"}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {selectedIncident.reportedBy?.email || "No email"}
+                        {selectedIncident.reportedBy?.phone &&
+                          ` • ${selectedIncident.reportedBy.phone}`}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                </Grid>
+
+                {/* Incident Details - Right Column */}
+                <Grid item xs={12} md={6}>
+                  {/* Category and Severity */}
+                  <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Category & Severity
+                    </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        bgcolor: "#f8fafc",
+                        borderRadius: 2,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap={2} mb={1}>
+                        {getCategoryIcon(selectedIncident.category)}
+                        <Box>
+                          <Typography variant="body1" fontWeight={500}>
+                            {selectedIncident.category || "Uncategorized"}
+                          </Typography>
+                          {selectedIncident.severity && (
+                            <Chip
+                              label={`Severity: ${selectedIncident.severity}`}
+                              size="small"
+                              sx={{
+                                mt: 0.5,
+                                bgcolor:
+                                  selectedIncident.severity === "high"
+                                    ? "#fee2e2"
+                                    : selectedIncident.severity === "medium"
+                                    ? "#fef3c7"
+                                    : "#dcfce7",
+                                color:
+                                  selectedIncident.severity === "high"
+                                    ? "#991b1b"
+                                    : selectedIncident.severity === "medium"
+                                    ? "#92400e"
+                                    : "#065f46",
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    </Paper>
+                  </Box>
+
+                  {/* Additional Information */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Additional Information
+                    </Typography>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        bgcolor: "#f8fafc",
+                        borderRadius: 2,
+                        border: "1px solid #e2e8f0",
+                      }}
+                    >
+                      <Typography variant="body2">
+                        {selectedIncident.additionalInfo ||
+                          "No additional information provided"}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                </Grid>
+
+                {/* Assigned Department */}
+                {selectedIncident.assignedTo && (
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                    <Box>
+                      <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        Assigned Department
+                      </Typography>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          bgcolor: "#e0f2fe",
+                          borderRadius: 2,
+                          border: "1px solid #7dd3fc",
+                        }}
+                      >
+                        <Box display="flex" alignItems="center" gap={2}>
+                          <DepartmentIcon color="primary" />
+                          <Box>
+                            <Typography variant="body1" fontWeight={600}>
+                              {selectedIncident.assignedTo.department ||
+                                "Not assigned"}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Assigned on:{" "}
+                              {format(
+                                parseISO(
+                                  selectedIncident.assignedTo.assignedAt
+                                ),
+                                "MMM dd, yyyy HH:mm"
+                              )}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Paper>
+                    </Box>
+                  </Grid>
+                )}
+
+                {/* Attachments/Evidence */}
+                {selectedIncident.media &&
+                  selectedIncident.media.length > 0 && (
+                    <Grid item xs={12}>
+                      <Divider sx={{ my: 1 }} />
+                      <Box>
+                        <Typography
+                          variant="subtitle2"
+                          color="text.secondary"
+                          gutterBottom
+                        >
+                          Attachments ({selectedIncident.media.length})
+                        </Typography>
+                        <Box display="flex" gap={2} flexWrap="wrap">
+                          {selectedIncident.media.map(
+                            (media: any, index: number) => (
+                              <Paper
+                                key={index}
+                                sx={{
+                                  p: 1,
+                                  borderRadius: 1,
+                                  border: "1px solid #e2e8f0",
+                                  width: 100,
+                                  height: 100,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  bgcolor: "#f8fafc",
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  {media.type === "image"
+                                    ? "📷 Image"
+                                    : "📹 Video"}
+                                </Typography>
+                              </Paper>
+                            )
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+                  )}
               </Grid>
             </Box>
           )}
@@ -1340,6 +1588,34 @@ const AdminDashboard: React.FC = () => {
           >
             Close
           </Button>
+          {selectedIncident?.status === "pending" && (
+            <>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<ApproveIcon />}
+                onClick={() => handleApprove(selectedIncident)}
+                sx={{
+                  borderRadius: "12px",
+                  fontWeight: 600,
+                }}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<RejectIcon />}
+                onClick={() => handleReject(selectedIncident)}
+                sx={{
+                  borderRadius: "12px",
+                  fontWeight: 600,
+                }}
+              >
+                Reject
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -1414,7 +1690,7 @@ const AdminDashboard: React.FC = () => {
                     {selectedUser.cnic || "Not provided"}
                   </Typography>
                 </Grid>
-                
+
                 {selectedUser.department && (
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
@@ -1425,7 +1701,7 @@ const AdminDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                 )}
-                
+
                 {selectedUser.hospital && (
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
@@ -1436,7 +1712,7 @@ const AdminDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                 )}
-                
+
                 {selectedUser.ambulanceService && (
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
@@ -1447,7 +1723,7 @@ const AdminDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                 )}
-                
+
                 {selectedUser.drivingLicense && (
                   <Grid item xs={12}>
                     <Typography variant="body2" color="text.secondary">
@@ -1464,10 +1740,13 @@ const AdminDashboard: React.FC = () => {
                     Created At
                   </Typography>
                   <Typography variant="body1" fontWeight={500}>
-                    {format(parseISO(selectedUser.createdAt), "MMM dd, yyyy HH:mm")}
+                    {format(
+                      parseISO(selectedUser.createdAt),
+                      "MMM dd, yyyy HH:mm"
+                    )}
                   </Typography>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">
                     Last Login
@@ -1485,7 +1764,11 @@ const AdminDashboard: React.FC = () => {
                   <Grid item xs={12}>
                     <Alert severity="warning">
                       <Typography variant="body2">
-                        Restricted until: {format(parseISO(selectedUser.restrictionEndDate), "MMM dd, yyyy HH:mm")}
+                        Restricted until:{" "}
+                        {format(
+                          parseISO(selectedUser.restrictionEndDate),
+                          "MMM dd, yyyy HH:mm"
+                        )}
                       </Typography>
                     </Alert>
                   </Grid>
@@ -1584,9 +1867,9 @@ const AdminDashboard: React.FC = () => {
                   value={editingUser.role || "citizen"}
                   label="Role"
                   onChange={(e) =>
-                    setEditingUser({ 
-                      ...editingUser, 
-                      role: e.target.value as User["role"] 
+                    setEditingUser({
+                      ...editingUser,
+                      role: e.target.value as User["role"],
                     })
                   }
                 >
@@ -1605,9 +1888,9 @@ const AdminDashboard: React.FC = () => {
                   value={editingUser.status || "active"}
                   label="Status"
                   onChange={(e) =>
-                    setEditingUser({ 
-                      ...editingUser, 
-                      status: e.target.value as User["status"] 
+                    setEditingUser({
+                      ...editingUser,
+                      status: e.target.value as User["status"],
                     })
                   }
                 >
@@ -1619,7 +1902,8 @@ const AdminDashboard: React.FC = () => {
             </Grid>
 
             {/* Role-specific fields */}
-            {(editingUser.role === "driver" || editingUser.role === "department") && (
+            {(editingUser.role === "driver" ||
+              editingUser.role === "department") && (
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Department</InputLabel>
@@ -1627,11 +1911,16 @@ const AdminDashboard: React.FC = () => {
                     value={editingUser.department || ""}
                     label="Department"
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, department: e.target.value })
+                      setEditingUser({
+                        ...editingUser,
+                        department: e.target.value,
+                      })
                     }
                   >
                     <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
-                    <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+                    <MenuItem value="Chippa Ambulance">
+                      Chippa Ambulance
+                    </MenuItem>
                     <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
                   </Select>
                 </FormControl>
@@ -1646,7 +1935,10 @@ const AdminDashboard: React.FC = () => {
                     label="Ambulance Service"
                     value={editingUser.ambulanceService || ""}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, ambulanceService: e.target.value })
+                      setEditingUser({
+                        ...editingUser,
+                        ambulanceService: e.target.value,
+                      })
                     }
                     margin="normal"
                   />
@@ -1657,7 +1949,10 @@ const AdminDashboard: React.FC = () => {
                     label="Driving License"
                     value={editingUser.drivingLicense || ""}
                     onChange={(e) =>
-                      setEditingUser({ ...editingUser, drivingLicense: e.target.value })
+                      setEditingUser({
+                        ...editingUser,
+                        drivingLicense: e.target.value,
+                      })
                     }
                     margin="normal"
                   />
@@ -1682,7 +1977,11 @@ const AdminDashboard: React.FC = () => {
             {/* Password reset section */}
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
                 Password Management
               </Typography>
             </Grid>
@@ -1823,7 +2122,9 @@ const AdminDashboard: React.FC = () => {
                     }
                   >
                     <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
-                    <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+                    <MenuItem value="Chippa Ambulance">
+                      Chippa Ambulance
+                    </MenuItem>
                     <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
                   </Select>
                 </FormControl>
@@ -1943,7 +2244,10 @@ const AdminDashboard: React.FC = () => {
           <Button
             onClick={() => {
               if (selectedActionUser) {
-                handleRestrictUser(selectedActionUser._id || selectedActionUser.id, restrictDays);
+                handleRestrictUser(
+                  selectedActionUser._id || selectedActionUser.id,
+                  restrictDays
+                );
               }
             }}
             variant="contained"
@@ -1986,7 +2290,7 @@ const AdminDashboard: React.FC = () => {
           Restrict User
         </MenuItem>
         <Divider />
-        <MenuItem 
+        <MenuItem
           onClick={() => {
             if (selectedUserForMenu) {
               handleUserMenuAction("delete");
