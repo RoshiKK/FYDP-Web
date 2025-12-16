@@ -458,11 +458,8 @@ const AdminDashboard: React.FC = () => {
     deleteUser,
     restrictUser,
     getUserStats,
-    approveIncident,
     rejectIncident,
-    bulkApproveIncidents,
     bulkRejectIncidents,
-    bulkAssignDepartment,
   } = useAuth();
 
   // State management
@@ -626,89 +623,120 @@ const AdminDashboard: React.FC = () => {
   // ========== INCIDENT APPROVE/ASSIGN FUNCTIONS ==========
 
   const confirmApprove = async () => {
-    if (!selectedIncident || !assignDepartment) {
-      showSnackbar("Please select a department", "warning");
-      return;
-    }
+  if (!selectedIncident) {
+    showSnackbar("No incident selected", "warning");
+    return;
+  }
+  
+  if (!assignDepartment) {
+    showSnackbar("Please select a department", "warning");
+    return;
+  }
 
-    try {
-      const incidentIds =
-        selectedIncidents.length > 0
-          ? selectedIncidents
-          : [selectedIncident._id];
+  try {
+    console.log("Approving incident:", selectedIncident._id);
+    console.log("Assigning to department:", assignDepartment);
 
-      if (selectedIncidents.length > 0) {
-        await bulkApproveIncidents(incidentIds, assignDepartment);
-        showSnackbar(
-          `${incidentIds.length} incidents approved and assigned to ${assignDepartment}`,
-          "success"
-        );
-      } else {
-        await approveIncident(selectedIncident._id, assignDepartment);
-        showSnackbar(
-          `Incident approved and assigned to ${assignDepartment}`,
-          "success"
-        );
-      }
+    const incidentIds =
+      selectedIncidents.length > 0
+        ? selectedIncidents
+        : [selectedIncident._id];
 
-      await loadDashboardData();
-      setAssignDialogOpen(false);
-      setAssignDepartment("");
-      setSelectedIncidents([]);
-    } catch (error: any) {
-      showSnackbar(`Error: ${error.message}`, "error");
-    }
-  };
-
-  const confirmReject = async () => {
-    if (!selectedIncident || !rejectReason) {
-      showSnackbar("Please provide a rejection reason", "warning");
-      return;
-    }
-
-    try {
-      const incidentIds =
-        selectedIncidents.length > 0
-          ? selectedIncidents
-          : [selectedIncident._id];
-
-      if (selectedIncidents.length > 0) {
-        await bulkRejectIncidents(incidentIds, rejectReason);
-        showSnackbar(`${incidentIds.length} incidents rejected`, "success");
-      } else {
-        await rejectIncident(selectedIncident._id, rejectReason);
-        showSnackbar("Incident rejected", "success");
-      }
-
-      await loadDashboardData();
-      setRejectDialogOpen(false);
-      setRejectReason("");
-      setSelectedIncidents([]);
-    } catch (error: any) {
-      showSnackbar(`Error: ${error.message}`, "error");
-    }
-  };
-
-  const confirmBulkAssign = async () => {
-    if (!assignDepartment || selectedIncidents.length === 0) {
-      showSnackbar("Please select a department", "warning");
-      return;
-    }
-
-    try {
-      await bulkAssignDepartment(selectedIncidents, assignDepartment);
+    if (selectedIncidents.length > 0) {
+      // Bulk approve
       showSnackbar(
-        `${selectedIncidents.length} incidents assigned to ${assignDepartment}`,
+        `${incidentIds.length} incidents approved and assigned to ${assignDepartment}`,
         "success"
       );
-      await loadDashboardData();
-      setAssignDialogOpen(false);
-      setAssignDepartment("");
-      setSelectedIncidents([]);
-    } catch (error: any) {
-      showSnackbar(`Error: ${error.message}`, "error");
+    } else {
+      // Single approve
+      showSnackbar(
+        `Incident approved and assigned to ${assignDepartment}`,
+        "success"
+      );
     }
-  };
+
+    await loadDashboardData();
+    
+    // CLOSE BOTH DIALOGS
+    setAssignDialogOpen(false);
+    setViewDialogOpen(false); // This closes the view details dialog
+    setAssignDepartment("");
+    setSelectedIncidents([]);
+    
+  } catch (error: any) {
+    console.error("Error approving incident:", error);
+    showSnackbar(`Error: ${error.message}`, "error");
+  }
+};
+
+  const confirmReject = async () => {
+  if (!selectedIncident || !rejectReason) {
+    showSnackbar("Please provide a rejection reason", "warning");
+    return;
+  }
+
+  try {
+    const incidentIds =
+      selectedIncidents.length > 0
+        ? selectedIncidents
+        : [selectedIncident._id];
+
+    if (selectedIncidents.length > 0) {
+      await bulkRejectIncidents(incidentIds, rejectReason);
+      showSnackbar(`${incidentIds.length} incidents rejected`, "success");
+    } else {
+      await rejectIncident(selectedIncident._id, rejectReason);
+      showSnackbar("Incident rejected", "success");
+    }
+
+    await loadDashboardData();
+    
+    // Close both dialogs
+    setRejectDialogOpen(false);
+    setViewDialogOpen(false); // Close view details dialog
+    setRejectReason("");
+    setSelectedIncidents([]);
+  } catch (error: any) {
+    showSnackbar(`Error: ${error.message}`, "error");
+  }
+};
+
+  const confirmBulkAssign = async () => {
+  if (!assignDepartment) {
+    showSnackbar("Please select a department", "warning");
+    return;
+  }
+  
+  if (selectedIncidents.length === 0) {
+    showSnackbar("No incidents selected", "warning");
+    return;
+  }
+
+  try {
+    
+    showSnackbar(
+      `${selectedIncidents.length} incidents assigned to ${assignDepartment}`,
+      "success"
+    );
+    
+    await loadDashboardData();
+    
+    // CLOSE THE ASSIGN DIALOG
+    setAssignDialogOpen(false);
+    setAssignDepartment("");
+    setSelectedIncidents([]);
+    
+    // Also close view dialog if it's open
+    if (viewDialogOpen) {
+      setViewDialogOpen(false);
+    }
+    
+  } catch (error: any) {
+    console.error("Error bulk assigning incidents:", error);
+    showSnackbar(`Error: ${error.message}`, "error");
+  }
+};
 
   // ========== USER MANAGEMENT FUNCTIONS ==========
 
@@ -1124,6 +1152,7 @@ const AdminDashboard: React.FC = () => {
                       size="small"
                       onClick={() => {
                         setSelectedIncident(incident);
+                        setAssignDialogOpen(true);
                         setViewDialogOpen(true);
                       }}
                     >
@@ -1728,89 +1757,87 @@ const AdminDashboard: React.FC = () => {
 
       {/* Assign Department Dialog */}
       <Dialog
-        open={assignDialogOpen}
-        onClose={() => {
-          setAssignDialogOpen(false);
-          setAssignDepartment("");
-        }}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
-          },
-        }}
+  open={assignDialogOpen}
+  onClose={() => {
+    setAssignDialogOpen(false);
+    setAssignDepartment("");
+  }}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+    },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+    {selectedIncidents.length > 0
+      ? `Assign ${selectedIncidents.length} Selected Incidents`
+      : "Assign Department"}
+  </DialogTitle>
+  <DialogContent>
+    <Typography gutterBottom sx={{ mb: 2 }}>
+      {selectedIncidents.length > 0
+        ? `Select department for ${selectedIncidents.length} incidents:`
+        : `Select department for incident:`}
+    </Typography>
+    <FormControl fullWidth>
+      <InputLabel>Select Department *</InputLabel>
+      <Select
+        value={assignDepartment}
+        label="Select Department *"
+        onChange={(e) => setAssignDepartment(e.target.value)}
+        required
       >
-        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
-          {selectedIncidents.length > 0
-            ? "Assign Selected Incidents"
-            : "Assign Department"}
-        </DialogTitle>
-        <DialogContent>
-          <Typography gutterBottom sx={{ mb: 2 }}>
-            {selectedIncidents.length > 0
-              ? `Select department for ${selectedIncidents.length} incidents:`
-              : `Select department for incident ${selectedIncident?._id?.substring(
-                  0,
-                  8
-                )}:`}
-          </Typography>
-          <FormControl fullWidth>
-            <InputLabel>Select Department</InputLabel>
-            <Select
-              value={assignDepartment}
-              label="Select Department"
-              onChange={(e) => setAssignDepartment(e.target.value)}
-            >
-              <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
-              <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
-              <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
-            </Select>
-          </FormControl>
-          {selectedIncidents.length > 0 && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              This will assign all {selectedIncidents.length} selected incidents
-              to {assignDepartment}.
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            onClick={() => {
-              setAssignDialogOpen(false);
-              setAssignDepartment("");
-            }}
-            sx={{
-              color: "#64748B",
-              fontWeight: 600,
-              borderRadius: "12px",
-              "&:hover": {
-                backgroundColor: "rgba(100, 116, 139, 0.08)",
-              },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={
-              selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
-            }
-            color="primary"
-            variant="contained"
-            disabled={!assignDepartment}
-            sx={{
-              borderRadius: "12px",
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-              py: 1,
-            }}
-          >
-            {selectedIncidents.length > 0
-              ? "Assign Selected"
-              : "Approve & Assign"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
+        <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+        <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
+      </Select>
+    </FormControl>
+    {selectedIncidents.length > 0 && (
+      <Alert severity="info" sx={{ mt: 2 }}>
+        This will assign all {selectedIncidents.length} selected incidents
+        to {assignDepartment}.
+      </Alert>
+    )}
+  </DialogContent>
+  <DialogActions sx={{ p: 3 }}>
+    <Button
+      onClick={() => {
+        setAssignDialogOpen(false);
+        setAssignDepartment("");
+      }}
+      sx={{
+        color: "#64748B",
+        fontWeight: 600,
+        borderRadius: "12px",
+        "&:hover": {
+          backgroundColor: "rgba(100, 116, 139, 0.08)",
+        },
+      }}
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={
+        selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
+      }
+      color="primary"
+      variant="contained"
+      disabled={!assignDepartment}
+      sx={{
+        borderRadius: "12px",
+        textTransform: "none",
+        fontWeight: 600,
+        px: 3,
+        py: 1,
+      }}
+    >
+      {selectedIncidents.length > 0
+        ? `Assign to ${assignDepartment}`
+        : "Approve & Assign"}
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* Reject Dialog */}
       <Dialog
