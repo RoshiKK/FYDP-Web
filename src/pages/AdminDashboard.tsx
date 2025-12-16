@@ -55,12 +55,8 @@ import {
   CheckCircleOutline as CheckCircleOutlineIcon,
   CancelOutlined as CancelOutlinedIcon,
   AssignmentTurnedIn as AssignmentTurnedInIcon,
-  LocalFireDepartment as FireIcon,
-  LocalPolice as PoliceIcon,
   MedicalServices as MedicalIcon,
   Traffic as TrafficIcon,
-  Water as WaterIcon,
-  Construction as ConstructionIcon,
   Public as PublicIcon,
   Assignment as TotalIcon,
   People as PeopleIcon,
@@ -116,20 +112,8 @@ const getCategoryIcon = (category: string) => {
   switch (category) {
     case "Accident":
       return <TrafficIcon />;
-    case "Fire":
-      return <FireIcon />;
     case "Medical Emergency":
       return <MedicalIcon />;
-    case "Crime":
-      return <PoliceIcon />;
-    case "Natural Disaster":
-      return <WaterIcon />;
-    case "Infrastructure Failure":
-      return <ConstructionIcon />;
-    case "Traffic Jam":
-      return <TrafficIcon />;
-    case "Hazardous Material":
-      return <WarningIcon />;
     default:
       return <PublicIcon />;
   }
@@ -449,7 +433,6 @@ const AdminDashboard: React.FC = () => {
   );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [, setRejectDialogOpen] = useState(false);
-  const [, setAssignDialogOpen] = useState(false);
   const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
   const [,] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
@@ -493,6 +476,7 @@ const AdminDashboard: React.FC = () => {
   const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User>>({});
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
     null
@@ -1618,6 +1602,75 @@ const AdminDashboard: React.FC = () => {
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Add this Dialog after the View Incident Dialog */}
+<Dialog
+  open={assignDialogOpen}
+  onClose={() => setAssignDialogOpen(false)}
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+    },
+  }}
+>
+  <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+    Assign Department
+  </DialogTitle>
+  <DialogContent>
+    <Typography gutterBottom>
+      Assign a department to handle this incident:
+    </Typography>
+    {selectedIncident && (
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Incident: {selectedIncident.description?.substring(0, 100)}...
+      </Typography>
+    )}
+    <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel>Select Department</InputLabel>
+      <Select
+        label="Select Department"
+        // Add value and onChange handlers
+        defaultValue=""
+      >
+        <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
+        <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+        <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
+        <MenuItem value="Traffic Police">Traffic Police</MenuItem>
+        <MenuItem value="Fire Department">Fire Department</MenuItem>
+      </Select>
+    </FormControl>
+  </DialogContent>
+  <DialogActions sx={{ p: 3 }}>
+    <Button
+      onClick={() => setAssignDialogOpen(false)}
+      sx={{
+        color: "#64748B",
+        fontWeight: 600,
+        borderRadius: "12px",
+        "&:hover": {
+          backgroundColor: "rgba(100, 116, 139, 0.08)",
+        },
+      }}
+    >
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={() => {
+        // Handle assignment logic here
+        showSnackbar("Incident assigned successfully", "success");
+        setAssignDialogOpen(false);
+      }}
+      sx={{
+        borderRadius: "12px",
+        fontWeight: 600,
+      }}
+    >
+      Assign & Approve
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {/* View User Details Dialog */}
       <Dialog
