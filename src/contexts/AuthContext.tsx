@@ -166,11 +166,12 @@ interface AuthContextType {
   isImpersonating: boolean;
   originalUser: User | null;
   
+  // Authentication methods
   login: (email: string, password: string) => Promise<{ success: boolean; user: User }>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<User>;
   
-  // Add impersonation methods
+  // Impersonation methods
   impersonateUser: (userId: string) => Promise<{ success: boolean; user: User }>;
   returnToSuperAdmin: () => Promise<void>;
   
