@@ -1790,7 +1790,6 @@ const AdminDashboard: React.FC = () => {
       >
         <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
         <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
-        <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
       </Select>
     </FormControl>
     {selectedIncidents.length > 0 && (
