@@ -1,0 +1,2200 @@
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Button,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  Tabs,
+  Tab,
+  Avatar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Select,
+  FormControl,
+  InputLabel,
+  LinearProgress,
+  Snackbar,
+  CircularProgress,
+  Fab,
+  Divider,
+  CardMedia,
+} from "@mui/material";
+import {
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  Visibility as ViewIcon,
+  Warning as DuplicateIcon,
+  LocationOn as LocationIcon,
+  AccessTime as AccessTimeIcon,
+  SmartToy as AIIcon,
+  Pending as PendingIcon,
+  Block as BlockIcon,
+  MoreVert as MoreIcon,
+  Refresh as RefreshIcon,
+  PersonAdd as PersonAddIcon,
+  Info as InfoIcon,
+  FilterList as FilterIcon,
+  GetApp as ExportIcon,
+  DensitySmall as DensityIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+  CancelOutlined as CancelOutlinedIcon,
+  AssignmentTurnedIn as AssignmentTurnedInIcon,
+  LocalFireDepartment as FireIcon,
+  LocalPolice as PoliceIcon,
+  MedicalServices as MedicalIcon,
+  Traffic as TrafficIcon,
+  Water as WaterIcon,
+  Construction as ConstructionIcon,
+  Public as PublicIcon,
+  Assignment as TotalIcon,
+  People as PeopleIcon,
+  DoneAll as DoneAllIcon,
+  Timeline as TimelineIcon,
+  Warning as WarningIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  AssignmentInd as DepartmentIcon,
+} from "@mui/icons-material";
+
+import {
+  useAuth,
+  type Incident,
+  type DashboardStats,
+  type User,
+} from "../contexts/AuthContext";
+import IncidentMap from "../components/IncidentMap";
+
+// Recharts imports
+import {
+  BarChart,
+  PieChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
+  ResponsiveContainer,
+  Pie,
+  AreaChart,
+  Area,
+} from "recharts";
+
+// Date utilities
+import { format, formatDistanceToNow, parseISO } from "date-fns";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const getPhotoUrl = (photo: any): string => {
+  if (!photo) return "";
+
+  console.log("📷 Processing photo:", photo);
+
+  // If we have a direct URL, use it
+  if (photo.url && typeof photo.url === "string") {
+    console.log("📷 Using photo.url:", photo.url);
+    return photo.url;
+  }
+
+  // If we have a filename, construct the URL from your backend structure
+  if (photo.filename && typeof photo.filename === "string") {
+    const url = `/api/upload/image/${photo.filename}`;
+    console.log("📷 Generated URL from filename:", url);
+    return url;
+  }
+
+  // If we have a GridFS file ID
+  if (photo._id || photo.id) {
+    const fileId = photo._id || photo.id;
+    const url = `/api/upload/image/${fileId}`;
+    console.log("📷 Generated URL from ID:", url);
+    return url;
+  }
+
+  console.log("📷 No valid photo data found");
+  return "";
+};
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div hidden={value !== index} {...other}>
+      {value === index && <Box sx={{ p: 4 }}>{children}</Box>}
+    </div>
+  );
+}
+
+const departments = ["Edhi Foundation", "Chippa Ambulance"];
+
+const priorityColors: Record<string, string> = {
+  low: "#10B981",
+  medium: "#F59E0B",
+  high: "#EF4444",
+  urgent: "#DC2626",
+};
+
+const statusColors: Record<string, string> = {
+  pending: "#F59E0B",
+  approved: "#10B981",
+  rejected: "#EF4444",
+  assigned: "#3B82F6",
+  in_progress: "#8B5CF6",
+  completed: "#8B5CF6",
+  cancelled: "#6B7280",
+};
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Accident":
+      return <TrafficIcon />;
+    case "Fire":
+      return <FireIcon />;
+    case "Medical Emergency":
+      return <MedicalIcon />;
+    case "Crime":
+      return <PoliceIcon />;
+    case "Natural Disaster":
+      return <WaterIcon />;
+    case "Infrastructure Failure":
+      return <ConstructionIcon />;
+    case "Traffic Jam":
+      return <TrafficIcon />;
+    case "Hazardous Material":
+      return <WarningIcon />;
+    default:
+      return <PublicIcon />;
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "pending":
+      return <PendingIcon />;
+    case "approved":
+      return <ApproveIcon />;
+    case "rejected":
+      return <RejectIcon />;
+    case "assigned":
+      return <AssignmentTurnedInIcon />;
+    case "in_progress":
+      return <TimelineIcon />;
+    case "completed":
+      return <DoneAllIcon />;
+    case "cancelled":
+      return <CancelOutlinedIcon />;
+    default:
+      return <InfoIcon />;
+  }
+};
+
+const getRoleColor = (role: string) => {
+  const colors: { [key: string]: any } = {
+    admin: "error",
+    department: "primary",
+    driver: "info",
+    hospital: "success",
+    citizen: "default",
+    superadmin: "error",
+  };
+  return colors[role] || "default";
+};
+
+const getStatusColor = (status: string) => {
+  const colors: { [key: string]: any } = {
+    active: "success",
+    inactive: "warning",
+    suspended: "error",
+  };
+  return colors[status] || "default";
+};
+
+const StatCard = ({ title, value, icon, subtitle }: any) => (
+  <Card
+    sx={{
+      background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+      color: "#fff",
+      borderRadius: 3,
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      transition: "transform 0.25s ease, box-shadow 0.25s ease",
+      px: 2,
+      py: 2,
+      boxShadow: "0 6px 18px rgba(15, 23, 42, 0.06)",
+      "&:hover": {
+        transform: "translateY(-6px)",
+        boxShadow: "0 12px 30px rgba(15, 23, 42, 0.12)",
+      },
+    }}
+  >
+    <Avatar
+      sx={{
+        bgcolor: "rgba(255,255,255,0.12)",
+        width: 56,
+        height: 56,
+        mr: 2,
+      }}
+    >
+      {icon}
+    </Avatar>
+    <Box>
+      <Typography variant="subtitle2" sx={{ opacity: 0.92, fontWeight: 700 }}>
+        {title}
+      </Typography>
+      <Typography variant="h4" fontWeight={800}>
+        {value}
+      </Typography>
+      {subtitle && (
+        <Typography variant="caption" sx={{ opacity: 0.8 }}>
+          {subtitle}
+        </Typography>
+      )}
+    </Box>
+  </Card>
+);
+
+const IncidentCard = ({
+  incident,
+  onView,
+  onApprove,
+  onReject,
+  selected = false,
+  onSelect,
+}: any) => {
+  return (
+    <Card
+      elevation={2}
+      sx={{
+        borderRadius: 3,
+        background: "#fff",
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        height: "100%",
+        minHeight: 320,
+        border: selected ? "2px solid #3B82F6" : "none",
+        boxShadow: "0 8px 28px rgba(15, 23, 42, 0.04)",
+        cursor: "pointer",
+        "&:hover": {
+          boxShadow: "0 14px 40px rgba(15,23,42,0.08)",
+          transform: "translateY(-6px)",
+        },
+      }}
+      onClick={() => onSelect && onSelect(incident._id)}
+    >
+      <CardContent
+        sx={{ p: 3, flexGrow: 1, display: "flex", flexDirection: "column" }}
+      >
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          mb={2}
+        >
+          <Box sx={{ pr: 1, minWidth: 0 }}>
+            <Typography
+              noWrap
+              variant="subtitle2"
+              sx={{ color: "#6b7280", fontWeight: 600 }}
+            >
+              {incident.reportedBy?.name || "Unknown"}
+            </Typography>
+            <Typography noWrap variant="caption" sx={{ color: "#9ca3af" }}>
+              {incident.reportedBy?.email || ""} •{" "}
+              {incident.reportedBy?.phone || ""}
+            </Typography>
+          </Box>
+          <Box display="flex" gap={1} alignItems="center" flexShrink={0}>
+            {incident.aiDetectionScore && (
+              <Chip
+                icon={<AIIcon sx={{ color: "#b91c1c !important" }} />}
+                label={`AI ${incident.aiDetectionScore}%`}
+                variant="outlined"
+                size="small"
+                sx={{
+                  borderColor: "#f87171",
+                  color: "#b91c1c",
+                  fontWeight: 700,
+                  background: "rgba(255,0,0,0.04)",
+                }}
+              />
+            )}
+            {incident.similarIncidents && incident.similarIncidents > 0 && (
+              <Chip
+                icon={<DuplicateIcon />}
+                label="Possible Duplicate"
+                color="warning"
+                size="small"
+                variant="outlined"
+              />
+            )}
+          </Box>
+        </Box>
+
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{
+            color: "#111827",
+            fontWeight: 700,
+            lineHeight: 1.35,
+            mb: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            minHeight: "3.6em",
+          }}
+        >
+          {incident.description || "No description"}
+        </Typography>
+
+        <Box sx={{ mt: "auto" }}>
+          <Box display="flex" alignItems="center" gap={1} mb={1}>
+            <Avatar
+              sx={{
+                bgcolor: "#fff0f0",
+                color: "#991b1b",
+                width: 32,
+                height: 32,
+              }}
+            >
+              <LocationIcon fontSize="small" />
+            </Avatar>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {incident.location?.address || "Unknown location"}
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Avatar
+              sx={{
+                bgcolor: "#fff0f0",
+                color: "#991b1b",
+                width: 32,
+                height: 32,
+              }}
+            >
+              <AccessTimeIcon fontSize="small" />
+            </Avatar>
+            <Typography variant="body2" color="text.secondary">
+              {formatDistanceToNow(parseISO(incident.createdAt), {
+                addSuffix: true,
+              })}
+            </Typography>
+          </Box>
+        </Box>
+      </CardContent>
+
+      <Box
+        sx={{
+          p: 2,
+          pt: 0,
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1,
+        }}
+      >
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<ViewIcon />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onView(incident);
+          }}
+          sx={{ textTransform: "none", borderRadius: 2 }}
+        >
+          View
+        </Button>
+        {incident.status === "pending" && (
+          <>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              startIcon={<ApproveIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove(incident);
+              }}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Approve
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              startIcon={<RejectIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onReject(incident);
+              }}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Reject
+            </Button>
+          </>
+        )}
+      </Box>
+    </Card>
+  );
+};
+
+const AdminDashboard: React.FC = () => {
+  const {
+    getAdminDashboardData,
+    getAdminIncidents,
+    approveIncident,
+    rejectIncident,
+    bulkApproveIncidents,
+    bulkRejectIncidents,
+    bulkAssignDepartment,
+    getUsers,
+    createUser,
+    deleteUser,
+    restrictUser,
+    getUserStats,
+  } = useAuth();
+
+  // State management
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
+    null
+  );
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
+  const [analyticsDialogOpen, setAnalyticsDialogOpen] = useState(false);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
+  const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
+  const [rejectReason, setRejectReason] = useState("");
+  const [assignDepartment, setAssignDepartment] = useState("");
+  const [restrictDays, setRestrictDays] = useState(7);
+  const [actionMenuAnchor, setActionMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [selectedActionUser, setSelectedActionUser] = useState<User | null>(
+    null
+  );
+  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalIncidents: 0,
+    pendingIncidents: 0,
+    approvedIncidents: 0,
+    completedIncidents: 0,
+    avgResponseTime: 0,
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error" | "info" | "warning",
+  });
+  const [userStats, setUserStats] = useState<any>(null);
+  const [newUser, setNewUser] = useState<Partial<User>>({
+    name: "",
+    email: "",
+    phone: "",
+    role: "citizen",
+    department: "",
+    hospital: "",
+    ambulanceService: "",
+    drivingLicense: "",
+    status: "active",
+  });
+
+  // Load data on mount
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Load dashboard data
+      const dashboardResult = await getAdminDashboardData();
+      setDashboardData(dashboardResult);
+      setStats(dashboardResult.overview);
+
+      // Load incidents
+      const incidentsResult = await getAdminIncidents();
+      setIncidents(incidentsResult.data || []);
+
+      // Load users
+      const usersList = await getUsers();
+      setUsers(usersList);
+
+      // Load user stats
+      const statsResult = await getUserStats();
+      setUserStats(statsResult);
+    } catch (error: any) {
+      console.error("Error loading dashboard data:", error);
+      showSnackbar(`Error loading data: ${error.message}`, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      await loadDashboardData();
+      showSnackbar("Dashboard refreshed successfully", "success");
+    } catch (error: any) {
+      showSnackbar(`Error refreshing: ${error.message}`, "error");
+    }
+  };
+
+  const handleApprove = async (incident: Incident) => {
+    try {
+      setSelectedIncident(incident);
+      setAssignDialogOpen(true);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const handleReject = async (incident: Incident) => {
+    setSelectedIncident(incident);
+    setRejectDialogOpen(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!selectedIncident || !assignDepartment) return;
+
+    try {
+      const incidentIds =
+        selectedIncidents.length > 0
+          ? selectedIncidents
+          : [selectedIncident._id];
+
+      if (selectedIncidents.length > 0) {
+        await bulkApproveIncidents(incidentIds, assignDepartment);
+        showSnackbar(
+          `${incidentIds.length} incidents approved and assigned to ${assignDepartment}`,
+          "success"
+        );
+      } else {
+        await approveIncident(selectedIncident._id, assignDepartment);
+        showSnackbar(
+          `Incident approved and assigned to ${assignDepartment}`,
+          "success"
+        );
+      }
+
+      await loadDashboardData();
+      setAssignDialogOpen(false);
+      setAssignDepartment("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!selectedIncident || !rejectReason) return;
+
+    try {
+      const incidentIds =
+        selectedIncidents.length > 0
+          ? selectedIncidents
+          : [selectedIncident._id];
+
+      if (selectedIncidents.length > 0) {
+        await bulkRejectIncidents(incidentIds, rejectReason);
+        showSnackbar(`${incidentIds.length} incidents rejected`, "success");
+      } else {
+        await rejectIncident(selectedIncident._id, rejectReason);
+        showSnackbar("Incident rejected", "success");
+      }
+
+      await loadDashboardData();
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const confirmBulkAssign = async () => {
+    if (!assignDepartment || selectedIncidents.length === 0) return;
+
+    try {
+      await bulkAssignDepartment(selectedIncidents, assignDepartment);
+      showSnackbar(
+        `${selectedIncidents.length} incidents assigned to ${assignDepartment}`,
+        "success"
+      );
+      await loadDashboardData();
+      setAssignDialogOpen(false);
+      setAssignDepartment("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const handleBulkAction = (action: string) => {
+    if (selectedIncidents.length === 0) {
+      showSnackbar("No incidents selected", "warning");
+      return;
+    }
+
+    switch (action) {
+      case "approve":
+        setAssignDialogOpen(true);
+        break;
+      case "reject":
+        setRejectDialogOpen(true);
+        break;
+      case "assign":
+        setAssignDialogOpen(true);
+        break;
+      case "clear":
+        setSelectedIncidents([]);
+        break;
+    }
+    setBulkMenuAnchor(null);
+  };
+
+  const handleIncidentSelect = (incidentId: string) => {
+    setSelectedIncidents((prev) =>
+      prev.includes(incidentId)
+        ? prev.filter((id) => id !== incidentId)
+        : [...prev, incidentId]
+    );
+  };
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error" | "info" | "warning"
+  ) => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const filteredIncidents = incidents;
+
+  const pendingIncidents = filteredIncidents.filter(
+    (inc) => inc.status === "pending"
+  );
+  const processedIncidents = filteredIncidents.filter(
+    (inc) => inc.status !== "pending"
+  );
+
+  // Prepare chart data
+  const incidentTrendData =
+    dashboardData?.analytics?.monthlyTrends?.map((item: any) => ({
+      month: `${item._id.year}-${item._id.month}`,
+      incidents: item.count,
+      completed: item.completed || 0,
+    })) || [];
+
+  const categoryDistributionData =
+    dashboardData?.categoryStats?.map((item: any) => ({
+      name: item._id,
+      value: item.count,
+    })) || [];
+
+  const departmentPerformanceData =
+    dashboardData?.departmentStats?.map((item: any) => ({
+      name: item._id,
+      responseTime: item.avgResponseTime || 0,
+      incidents: item.count,
+      completed: item.completed || 0,
+    })) || [];
+
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884D8",
+    "#82CA9D",
+  ];
+
+  const handleCreateUser = async () => {
+    try {
+      const createdUser = await createUser(newUser);
+      showSnackbar(`User ${createdUser.name} created successfully`, "success");
+      setUserDialogOpen(false);
+      setNewUser({
+        name: "",
+        email: "",
+        phone: "",
+        role: "citizen",
+        department: "",
+        hospital: "",
+        ambulanceService: "",
+        drivingLicense: "",
+        status: "active",
+      });
+      await loadDashboardData();
+    } catch (error: any) {
+      showSnackbar(`Error creating user: ${error.message}`, "error");
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      showSnackbar("User deleted successfully", "success");
+      await loadDashboardData();
+    } catch (error: any) {
+      showSnackbar(`Error deleting user: ${error.message}`, "error");
+    }
+  };
+
+  const handleRestrictUser = async () => {
+    if (!selectedActionUser) return;
+
+    try {
+      await restrictUser(
+        selectedActionUser._id,
+        restrictDays,
+        "Manual restriction by admin"
+      );
+      showSnackbar(
+        `User ${selectedActionUser.name} restricted for ${restrictDays} days`,
+        "success"
+      );
+      setRestrictDialogOpen(false);
+      await loadDashboardData();
+    } catch (error: any) {
+      showSnackbar(`Error restricting user: ${error.message}`, "error");
+    }
+  };
+
+  const statCards = [
+    {
+      title: "Total Reports",
+      value: stats.totalIncidents,
+      icon: <TotalIcon fontSize="large" />,
+    },
+    {
+      title: "Pending Review",
+      value: stats.pendingIncidents,
+      icon: <PendingIcon fontSize="large" />,
+    },
+    {
+      title: "Approved",
+      value: stats.approvedIncidents,
+      icon: <ApproveIcon fontSize="large" />,
+    },
+    {
+      title: "Completed",
+      value: stats.completedIncidents,
+      icon: <DoneAllIcon fontSize="large" />,
+    },
+    {
+      title: "Active Users",
+      value: userStats?.total?.activeUsers || 0,
+      icon: <PeopleIcon fontSize="large" />,
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return (
+    <Container
+      maxWidth="xl"
+      sx={{
+        py: 6,
+        minHeight: "100vh",
+        background: "linear-gradient(180deg, #ffe5e5 0%, #fef2f2 100%)",
+      }}
+    >
+      {/* Header */}
+      <Box mb={6} textAlign="center">
+        <Typography variant="h3" fontWeight={800} sx={{ color: "#111827" }}>
+          ADMIN DASHBOARD
+        </Typography>
+        <Typography variant="h6" color="text.secondary">
+          Review and manage incident reports with AI-powered assistance
+        </Typography>
+      </Box>
+
+      {/* Statistics Cards */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: 3,
+          mb: 5,
+          alignItems: "stretch",
+          flexWrap: { xs: "wrap", md: "nowrap" },
+        }}
+      >
+        {statCards.map((stat, index) => (
+          <Box key={index} sx={{ flex: "1 1 0", minWidth: 180 }}>
+            <StatCard title={stat.title} value={stat.value} icon={stat.icon} />
+          </Box>
+        ))}
+      </Box>
+
+      {/* Tabs for different views */}
+      <Paper
+        sx={{
+          width: "100%",
+          mb: 4,
+          borderRadius: 3,
+          background: "#fff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        }}
+      >
+        <Tabs
+          value={tabValue}
+          onChange={(_, v) => setTabValue(v)}
+          variant="fullWidth"
+          textColor="primary"
+          indicatorColor="primary"
+          sx={{ "& .MuiTab-root": { fontSize: "1.1rem", fontWeight: 600 } }}
+        >
+          <Tab label={`Pending Review (${pendingIncidents.length})`} />
+          <Tab label={`Processed (${processedIncidents.length})`} />
+          <Tab label={`Map View (${incidents.length})`} />{" "}
+          {/* Updated this line */}
+          <Tab label="User Management" />
+        </Tabs>
+      </Paper>
+
+      {/* Pending Review Tab */}
+      <TabPanel value={tabValue} index={0}>
+        {/* Alert Banner */}
+        {stats.pendingIncidents > 5 && (
+          <Alert
+            severity="warning"
+            icon={<WarningIcon />}
+            sx={{ mb: 3, borderRadius: 2 }}
+            action={
+              <Button color="inherit" size="small">
+                View All
+              </Button>
+            }
+          >
+            <Typography fontWeight={600}>
+              High Priority Alert: {stats.pendingIncidents} incidents awaiting
+              review
+            </Typography>
+          </Alert>
+        )}
+
+        {/* Bulk Actions Bar */}
+        {selectedIncidents.length > 0 && (
+          <Paper sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: "#dbeafe" }}>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Box display="flex" alignItems="center" gap={2}>
+                <CheckCircleOutlineIcon sx={{ color: "#1d4ed8" }} />
+                <Box>
+                  <Typography fontWeight={600} color="#1e40af">
+                    {selectedIncidents.length} incidents selected
+                  </Typography>
+                  <Typography variant="body2" color="#3b82f6">
+                    Choose an action to perform on all selected incidents
+                  </Typography>
+                </Box>
+              </Box>
+              <Box display="flex" gap={1}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<ApproveIcon />}
+                  onClick={() => handleBulkAction("approve")}
+                >
+                  Approve Selected
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<RejectIcon />}
+                  onClick={() => handleBulkAction("reject")}
+                >
+                  Reject Selected
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<DepartmentIcon />}
+                  onClick={() => handleBulkAction("assign")}
+                >
+                  Assign Department
+                </Button>
+              </Box>
+            </Box>
+          </Paper>
+        )}
+
+        <Grid container spacing={3} alignItems="stretch">
+          {pendingIncidents.map((incident) => (
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              key={incident._id}
+              sx={{ display: "flex" }}
+            >
+              <IncidentCard
+                incident={incident}
+                onView={() => {
+                  setSelectedIncident(incident);
+                  setViewDialogOpen(true);
+                }}
+                onApprove={() => handleApprove(incident)}
+                onReject={() => handleReject(incident)}
+                selected={selectedIncidents.includes(incident._id)}
+                onSelect={handleIncidentSelect}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      </TabPanel>
+
+      {/* Processed Tab */}
+      <TabPanel value={tabValue} index={1}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 3,
+            background: "#fff",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#f9fafb" }}>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  ID
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Description
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Category
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Department
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Status
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Reported By
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Date
+                </TableCell>
+                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {processedIncidents.map((incident) => (
+                <TableRow key={incident._id} hover>
+                  <TableCell>
+                    <Typography fontWeight={600}>
+                      {incident._id?.substring(0, 8)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography noWrap sx={{ maxWidth: 300 }}>
+                      {incident.description || "No description"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={incident.category}
+                      size="small"
+                      icon={getCategoryIcon(incident.category)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {incident.assignedTo?.department || "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={incident.status}
+                      size="small"
+                      sx={{
+                        bgcolor: `${
+                          statusColors[incident.status] || "#6B7280"
+                        }20`,
+                        color: statusColors[incident.status] || "#6B7280",
+                        fontWeight: 600,
+                      }}
+                      icon={getStatusIcon(incident.status)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {incident.reportedBy?.name || "Unknown"}
+                  </TableCell>
+                  <TableCell>
+                    {format(parseISO(incident.createdAt), "MMM dd, yyyy HH:mm")}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSelectedIncident(incident);
+                        setViewDialogOpen(true);
+                      }}
+                    >
+                      <ViewIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </TabPanel>
+
+      {/* Map View Tab */}
+      <TabPanel value={tabValue} index={2}>
+        <Paper
+          sx={{
+            height: "calc(100vh - 300px)",
+            minHeight: 600,
+            width: "100%",
+            borderRadius: 3,
+            overflow: "hidden",
+            boxShadow: 3,
+          }}
+        >
+          <IncidentMap
+            incidents={incidents}
+            onIncidentClick={(incident) => {
+              setSelectedIncident(incident);
+              setViewDialogOpen(true);
+            }}
+            initialCenter={[24.8607, 67.0011]} // Karachi coordinates
+            initialZoom={12}
+          />
+        </Paper>
+
+        {/* Map Statistics */}
+        <Grid container spacing={3} sx={{ mt: 3 }}>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3, borderRadius: 3, height: "100%" }}>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Incident Distribution by Area
+              </Typography>
+              <Box
+                sx={{
+                  height: 200,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography color="text.secondary">
+                  Spatial analysis coming soon
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3, borderRadius: 3, height: "100%" }}>
+              <Typography variant="h6" gutterBottom fontWeight={600}>
+                Response Time Heatmap
+              </Typography>
+              <Box
+                sx={{
+                  height: 200,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography color="text.secondary">
+                  Response time visualization coming soon
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+      </TabPanel>
+
+      {/* User Management Tab */}
+      <TabPanel value={tabValue} index={3}>
+        <Paper
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            background: "#fff",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+          }}
+        >
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={3}
+          >
+            <Typography variant="h5" fontWeight={700} sx={{ color: "#111827" }}>
+              User Management
+            </Typography>
+            <Box display="flex" gap={1}>
+              <Tooltip title="Filters">
+                <IconButton>
+                  <FilterIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Density">
+                <IconButton>
+                  <DensityIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Export">
+                <IconButton>
+                  <ExportIcon />
+                </IconButton>
+              </Tooltip>
+              <Button
+                variant="contained"
+                startIcon={<PersonAddIcon />}
+                onClick={() => setUserDialogOpen(true)}
+              >
+                Add User
+              </Button>
+            </Box>
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Name
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Email
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Phone Number
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Role
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Organization
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Status
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Last Login
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user._id} hover>
+                    <TableCell>
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Avatar>{user.name.charAt(0)}</Avatar>
+                        <Box>
+                          <Typography fontWeight={600}>{user.name}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Created:{" "}
+                            {format(parseISO(user.createdAt), "MMM dd, yyyy")}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phone}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.role}
+                        color={getRoleColor(user.role)}
+                        size="small"
+                        sx={{ fontWeight: 600, borderRadius: 1 }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {user.department ||
+                        user.hospital ||
+                        user.ambulanceService ||
+                        "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.status}
+                        color={getStatusColor(user.status)}
+                        size="small"
+                        sx={{ fontWeight: 600, borderRadius: 1 }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {user.lastLogin
+                        ? formatDistanceToNow(parseISO(user.lastLogin), {
+                            addSuffix: true,
+                          })
+                        : "Never"}
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View">
+                        <IconButton size="small" sx={{ color: "#3B82F6" }}>
+                          <ViewIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="More Actions">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            setSelectedActionUser(user);
+                            setActionMenuAnchor(e.currentTarget);
+                          }}
+                        >
+                          <MoreIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </TabPanel>
+
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        sx={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+          "&:hover": {
+            background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+          },
+        }}
+        onClick={handleRefresh}
+      >
+        <RefreshIcon />
+      </Fab>
+
+      {/* Dialogs */}
+      {/* View Details Dialog */}
+      <Dialog
+        open={viewDialogOpen}
+        onClose={() => setViewDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h6">Incident Details</Typography>
+            {selectedIncident && (
+              <Chip
+                label={selectedIncident.status}
+                size="small"
+                sx={{
+                  bgcolor: `${
+                    statusColors[selectedIncident.status] || "#6B7280"
+                  }20`,
+                  color: statusColors[selectedIncident.status] || "#6B7280",
+                  fontWeight: 600,
+                }}
+              />
+            )}
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {selectedIncident && (
+            <Box>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedIncident.description || "No description"}
+                  </Typography>
+                  {selectedIncident.photos &&
+                  selectedIncident.photos.length > 0 ? (
+                    <Box sx={{ mt: 2, mb: 3 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Photos ({selectedIncident.photos.length}):
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedIncident.photos.map((photo, index) => {
+                          // Get the URL using our helper function
+                          const photoUrl = getPhotoUrl(photo);
+
+                          // Construct the full URL
+                          const fullUrl = photoUrl
+                            ? photoUrl.startsWith("http")
+                              ? photoUrl
+                              : `${API_URL}${photoUrl}`
+                            : "";
+
+                          console.log(`📷 Photo ${index} full URL:`, fullUrl);
+
+                          return (
+                            <Grid item xs={4} key={index}>
+                              {fullUrl ? (
+                                <Box sx={{ position: "relative" }}>
+                                  <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={fullUrl}
+                                    alt={
+                                      photo.originalName ||
+                                      `Incident photo ${index + 1}`
+                                    }
+                                    sx={{
+                                      borderRadius: 1,
+                                      objectFit: "cover",
+                                      width: "100%",
+                                    }}
+                                    onError={(e) => {
+                                      console.error(
+                                        `❌ Failed to load image ${index}:`,
+                                        fullUrl
+                                      );
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
+
+                                      // Show error placeholder
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        const errorDiv =
+                                          document.createElement("div");
+                                        errorDiv.style.cssText = `
+                        height: 140px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: #ffebee;
+                                        border: 1px solid #ffcdd2;
+                                        border-radius: 4px;
+                                        padding: 8px;
+                                        text-align: center;
+                                      `;
+                                        errorDiv.innerHTML = `
+                        <div style="color: #d32f2f; font-size: 14px; margin-bottom: 4px;">⚠️ Image failed to load</div>
+                        <div style="color: #757575; font-size: 12px;">${
+                          photo.filename || "Unknown file"
+                        }</div>
+                      `;
+                                        parent.appendChild(errorDiv);
+                                      }
+                                    }}
+                                    onLoad={() => {
+                                      console.log(
+                                        `✅ Successfully loaded image ${index}:`,
+                                        fullUrl
+                                      );
+                                    }}
+                                  />
+                                </Box>
+                              ) : (
+                                <Paper
+                                  sx={{
+                                    height: 140,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexDirection: "column",
+                                    borderRadius: 1,
+                                    bgcolor: "#f5f5f5",
+                                    p: 2,
+                                  }}
+                                >
+                                  <Typography
+                                    color="text.secondary"
+                                    variant="body2"
+                                    align="center"
+                                  >
+                                    No Image URL
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.disabled"
+                                    align="center"
+                                  >
+                                    {photo.filename || "No filename"}
+                                  </Typography>
+                                </Paper>
+                              )}
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </Box>
+                  ) : (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        mb: 3,
+                        p: 2,
+                        bgcolor: "#f5f5f5",
+                        borderRadius: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        align="center"
+                      >
+                        No photos available for this incident
+                      </Typography>
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Reported By
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedIncident.reportedBy?.name || "Unknown"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedIncident.reportedBy?.email} •{" "}
+                    {selectedIncident.reportedBy?.phone}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Location
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedIncident.location?.address || "Unknown location"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Priority
+                  </Typography>
+                  <Chip
+                    label={selectedIncident.priority || "medium"}
+                    sx={{
+                      bgcolor: `${
+                        priorityColors[selectedIncident.priority || "medium"]
+                      }20`,
+                      color:
+                        priorityColors[selectedIncident.priority || "medium"],
+                      fontWeight: 600,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Category
+                  </Typography>
+                  <Chip
+                    label={selectedIncident.category}
+                    icon={getCategoryIcon(selectedIncident.category)}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Created At
+                  </Typography>
+                  <Typography variant="body1">
+                    {format(
+                      parseISO(selectedIncident.createdAt),
+                      "MMM dd, yyyy HH:mm:ss"
+                    )}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Last Updated
+                  </Typography>
+                  <Typography variant="body1">
+                    {format(
+                      parseISO(selectedIncident.updatedAt),
+                      "MMM dd, yyyy HH:mm:ss"
+                    )}
+                  </Typography>
+                </Grid>
+                {selectedIncident.assignedTo && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Assigned To
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body1">
+                        {selectedIncident.assignedTo.department}
+                      </Typography>
+                      {selectedIncident.assignedTo.driverName && (
+                        <Typography variant="body2" color="text.secondary">
+                          • Driver: {selectedIncident.assignedTo.driverName}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Grid>
+                )}
+                {selectedIncident.aiDetectionScore && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      AI Detection Score
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={selectedIncident.aiDetectionScore}
+                        sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
+                        color={
+                          selectedIncident.aiDetectionScore >= 80
+                            ? "success"
+                            : "warning"
+                        }
+                      />
+                      <Typography variant="body2" fontWeight={600}>
+                        {selectedIncident.aiDetectionScore}%
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setViewDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={() => setRejectDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          {selectedIncidents.length > 0
+            ? "Reject Selected Incidents"
+            : "Reject Incident"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            {selectedIncidents.length > 0
+              ? `Please provide a reason for rejecting ${selectedIncidents.length} incidents:`
+              : `Please provide a reason for rejecting incident ${selectedIncident?._id?.substring(
+                  0,
+                  8
+                )}:`}
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Rejection Reason"
+            fullWidth
+            multiline
+            rows={4}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setRejectDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmReject}
+            color="error"
+            variant="contained"
+            sx={{
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+            }}
+          >
+            Reject
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Assign Department Dialog */}
+      <Dialog
+        open={assignDialogOpen}
+        onClose={() => setAssignDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          {selectedIncidents.length > 0
+            ? "Assign Selected Incidents"
+            : "Assign Department"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom sx={{ mb: 2 }}>
+            {selectedIncidents.length > 0
+              ? `Select department for ${selectedIncidents.length} incidents:`
+              : `Select department for incident ${selectedIncident?._id?.substring(
+                  0,
+                  8
+                )}:`}
+          </Typography>
+          <FormControl fullWidth>
+            <InputLabel>Select Department</InputLabel>
+            <Select
+              value={assignDepartment}
+              label="Select Department"
+              onChange={(e) => setAssignDepartment(e.target.value)}
+            >
+              {departments.map((dept) => (
+                <MenuItem key={dept} value={dept}>
+                  {dept}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {selectedIncidents.length > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              This will assign all {selectedIncidents.length} selected incidents
+              to {assignDepartment}.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setAssignDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={
+              selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
+            }
+            color="primary"
+            variant="contained"
+            disabled={!assignDepartment}
+            sx={{
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+            }}
+          >
+            {selectedIncidents.length > 0
+              ? "Assign Selected"
+              : "Approve & Assign"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Analytics Dialog */}
+      <Dialog
+        open={analyticsDialogOpen}
+        onClose={() => setAnalyticsDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          System Analytics
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Incident Trends
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={incidentTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="incidents"
+                    stroke="#3B82F6"
+                    fill="#3B82F6"
+                    fillOpacity={0.3}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="completed"
+                    stroke="#10B981"
+                    fill="#10B981"
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Category Distribution
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={categoryDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }: any) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryDistributionData.map((_: any, index: number) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Department Performance
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={departmentPerformanceData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <RechartsLegend />
+                  <Bar
+                    dataKey="incidents"
+                    fill="#3B82F6"
+                    name="Total Incidents"
+                  />
+                  <Bar dataKey="completed" fill="#10B981" name="Completed" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setAnalyticsDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog
+        open={userDialogOpen}
+        onClose={() => setUserDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          Create New User
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Full Name"
+                fullWidth
+                value={newUser.name}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, name: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Email"
+                fullWidth
+                type="email"
+                value={newUser.email}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Phone"
+                fullWidth
+                value={newUser.phone}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, phone: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  value={newUser.role}
+                  label="Role"
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value as any })
+                  }
+                >
+                  <MenuItem value="citizen">Citizen</MenuItem>
+                  <MenuItem value="driver">Driver</MenuItem>
+                  <MenuItem value="department">Department</MenuItem>
+                  <MenuItem value="hospital">Hospital</MenuItem>
+                  <MenuItem value="admin">Admin</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            {(newUser.role === "driver" || newUser.role === "department") && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel>Department</InputLabel>
+                  <Select
+                    value={newUser.department}
+                    label="Department"
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, department: e.target.value })
+                    }
+                  >
+                    <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
+                    <MenuItem value="Chippa Ambulance">
+                      Chippa Ambulance
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+            {newUser.role === "driver" && (
+              <Grid item xs={12}>
+                <TextField
+                  label="Ambulance Service"
+                  fullWidth
+                  value={newUser.ambulanceService}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, ambulanceService: e.target.value })
+                  }
+                />
+              </Grid>
+            )}
+            {newUser.role === "hospital" && (
+              <Grid item xs={12}>
+                <TextField
+                  label="Hospital Name"
+                  fullWidth
+                  value={newUser.hospital}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, hospital: e.target.value })
+                  }
+                />
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setUserDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateUser}
+            variant="contained"
+            sx={{
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+            }}
+          >
+            Create User
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Menus */}
+      <Menu
+        anchorEl={actionMenuAnchor}
+        open={Boolean(actionMenuAnchor)}
+        onClose={() => setActionMenuAnchor(null)}
+      >
+        <MenuItem onClick={() => {}}>
+          <ListItemIcon>
+            <ViewIcon fontSize="small" />
+          </ListItemIcon>
+          View Profile
+        </MenuItem>
+        <MenuItem onClick={() => {}}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          Edit User
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setRestrictDialogOpen(true);
+            setActionMenuAnchor(null);
+          }}
+        >
+          <ListItemIcon>
+            <BlockIcon fontSize="small" />
+          </ListItemIcon>
+          Restrict Account
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (selectedActionUser) {
+              handleDeleteUser(selectedActionUser._id);
+              setActionMenuAnchor(null);
+            }
+          }}
+        >
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <Typography color="error">Delete User</Typography>
+        </MenuItem>
+      </Menu>
+
+      <Menu
+        anchorEl={bulkMenuAnchor}
+        open={Boolean(bulkMenuAnchor)}
+        onClose={() => setBulkMenuAnchor(null)}
+      >
+        <MenuItem onClick={() => handleBulkAction("approve")}>
+          <ListItemIcon>
+            <ApproveIcon fontSize="small" />
+          </ListItemIcon>
+          Approve Selected
+        </MenuItem>
+        <MenuItem onClick={() => handleBulkAction("reject")}>
+          <ListItemIcon>
+            <RejectIcon fontSize="small" />
+          </ListItemIcon>
+          Reject Selected
+        </MenuItem>
+        <MenuItem onClick={() => handleBulkAction("assign")}>
+          <ListItemIcon>
+            <DepartmentIcon fontSize="small" />
+          </ListItemIcon>
+          Assign Department
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleBulkAction("clear")}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          Clear Selection
+        </MenuItem>
+      </Menu>
+
+      {/* Restrict User Dialog */}
+      <Dialog
+        open={restrictDialogOpen}
+        onClose={() => setRestrictDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          Restrict User Access
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            Restrict user <strong>{selectedActionUser?.name}</strong> for:
+          </Typography>
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Restriction Period</InputLabel>
+            <Select
+              value={restrictDays}
+              onChange={(e) => setRestrictDays(Number(e.target.value))}
+              label="Restriction Period"
+            >
+              <MenuItem value={1}>1 Day</MenuItem>
+              <MenuItem value={7}>7 Days</MenuItem>
+              <MenuItem value={30}>30 Days</MenuItem>
+              <MenuItem value={90}>90 Days</MenuItem>
+            </Select>
+          </FormControl>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            User will not be able to login during the restriction period.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setRestrictDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleRestrictUser}
+            color="warning"
+            variant="contained"
+            sx={{
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+            }}
+          >
+            Restrict User
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+};
+
+export default AdminDashboard;
