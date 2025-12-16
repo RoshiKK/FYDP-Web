@@ -1526,7 +1526,7 @@ const AdminDashboard: React.FC = () => {
                 )}
 
                 {/* Attachments/Evidence */}
-                {selectedIncident.media &&
+                {Array.isArray(selectedIncident.media) &&
                   selectedIncident.media.length > 0 && (
                     <Grid item xs={12}>
                       <Divider sx={{ my: 1 }} />

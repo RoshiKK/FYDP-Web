@@ -47,7 +47,9 @@ export interface DashboardStats {
 }
 
 export interface Incident {
-  [x: string]: any;
+  additionalInfo: string;
+  media: boolean;
+  severity: any;
   _id: string;
   id: string;
   reportedBy: {
