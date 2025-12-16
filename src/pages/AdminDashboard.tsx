@@ -1635,9 +1635,6 @@ const AdminDashboard: React.FC = () => {
       >
         <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
         <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
-        <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
-        <MenuItem value="Traffic Police">Traffic Police</MenuItem>
-        <MenuItem value="Fire Department">Fire Department</MenuItem>
       </Select>
     </FormControl>
   </DialogContent>
