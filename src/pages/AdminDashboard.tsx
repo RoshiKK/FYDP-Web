@@ -458,6 +458,11 @@ const AdminDashboard: React.FC = () => {
     deleteUser,
     restrictUser,
     getUserStats,
+    approveIncident,
+    rejectIncident,
+    bulkApproveIncidents,
+    bulkRejectIncidents,
+    bulkAssignDepartment,
   } = useAuth();
 
   // State management
@@ -468,20 +473,24 @@ const AdminDashboard: React.FC = () => {
     null
   );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [, setRejectDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [restrictDialogOpen, setRestrictDialogOpen] = useState(false);
-  const [,] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
-  const [,] = useState("");
-  const [] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  const [assignDepartment, setAssignDepartment] = useState("");
   const [restrictDays, setRestrictDays] = useState(7);
-  const [] = useState<null | HTMLElement>(null);
+  const [] = useState<null | HTMLElement>(
+    null
+  );
   const [selectedActionUser, setSelectedActionUser] = useState<User | null>(
     null
   );
-  const [, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
+  const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalIncidents: 0,
@@ -512,7 +521,6 @@ const AdminDashboard: React.FC = () => {
   const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
-  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Partial<User>>({});
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(
     null
@@ -615,14 +623,92 @@ const AdminDashboard: React.FC = () => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const filteredIncidents = incidents;
+  // ========== INCIDENT APPROVE/ASSIGN FUNCTIONS ==========
 
-  const pendingIncidents = filteredIncidents.filter(
-    (inc) => inc.status === "pending"
-  );
-  const processedIncidents = filteredIncidents.filter(
-    (inc) => inc.status !== "pending"
-  );
+  const confirmApprove = async () => {
+    if (!selectedIncident || !assignDepartment) {
+      showSnackbar("Please select a department", "warning");
+      return;
+    }
+
+    try {
+      const incidentIds =
+        selectedIncidents.length > 0
+          ? selectedIncidents
+          : [selectedIncident._id];
+
+      if (selectedIncidents.length > 0) {
+        await bulkApproveIncidents(incidentIds, assignDepartment);
+        showSnackbar(
+          `${incidentIds.length} incidents approved and assigned to ${assignDepartment}`,
+          "success"
+        );
+      } else {
+        await approveIncident(selectedIncident._id, assignDepartment);
+        showSnackbar(
+          `Incident approved and assigned to ${assignDepartment}`,
+          "success"
+        );
+      }
+
+      await loadDashboardData();
+      setAssignDialogOpen(false);
+      setAssignDepartment("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!selectedIncident || !rejectReason) {
+      showSnackbar("Please provide a rejection reason", "warning");
+      return;
+    }
+
+    try {
+      const incidentIds =
+        selectedIncidents.length > 0
+          ? selectedIncidents
+          : [selectedIncident._id];
+
+      if (selectedIncidents.length > 0) {
+        await bulkRejectIncidents(incidentIds, rejectReason);
+        showSnackbar(`${incidentIds.length} incidents rejected`, "success");
+      } else {
+        await rejectIncident(selectedIncident._id, rejectReason);
+        showSnackbar("Incident rejected", "success");
+      }
+
+      await loadDashboardData();
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
+  const confirmBulkAssign = async () => {
+    if (!assignDepartment || selectedIncidents.length === 0) {
+      showSnackbar("Please select a department", "warning");
+      return;
+    }
+
+    try {
+      await bulkAssignDepartment(selectedIncidents, assignDepartment);
+      showSnackbar(
+        `${selectedIncidents.length} incidents assigned to ${assignDepartment}`,
+        "success"
+      );
+      await loadDashboardData();
+      setAssignDialogOpen(false);
+      setAssignDepartment("");
+      setSelectedIncidents([]);
+    } catch (error: any) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
 
   // ========== USER MANAGEMENT FUNCTIONS ==========
 
@@ -682,6 +768,12 @@ const AdminDashboard: React.FC = () => {
 
   const handleCreateUser = async () => {
     try {
+      // Validate required fields
+      if (!newUser.name || !newUser.email || !newUser.phone) {
+        showSnackbar("Please fill all required fields", "warning");
+        return;
+      }
+
       const createdUser = await createUser(newUser);
       showSnackbar(`User ${createdUser.name} created successfully`, "success");
       setUserDialogOpen(false);
@@ -735,6 +827,14 @@ const AdminDashboard: React.FC = () => {
     }
     handleUserMenuClose();
   };
+
+  const filteredIncidents = incidents;
+  const pendingIncidents = filteredIncidents.filter(
+    (inc) => inc.status === "pending"
+  );
+  const processedIncidents = filteredIncidents.filter(
+    (inc) => inc.status !== "pending"
+  );
 
   const statCards = [
     {
@@ -903,6 +1003,9 @@ const AdminDashboard: React.FC = () => {
                 >
                   Assign Department
                 </Button>
+                <IconButton onClick={(e) => setBulkMenuAnchor(e.currentTarget)}>
+                  <MoreIcon />
+                </IconButton>
               </Box>
             </Box>
           </Paper>
@@ -1626,7 +1729,10 @@ const AdminDashboard: React.FC = () => {
       {/* Assign Department Dialog */}
       <Dialog
         open={assignDialogOpen}
-        onClose={() => setAssignDialogOpen(false)}
+        onClose={() => {
+          setAssignDialogOpen(false);
+          setAssignDepartment("");
+        }}
         PaperProps={{
           sx: {
             borderRadius: 3,
@@ -1635,32 +1741,44 @@ const AdminDashboard: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
-          Assign Department
+          {selectedIncidents.length > 0
+            ? "Assign Selected Incidents"
+            : "Assign Department"}
         </DialogTitle>
         <DialogContent>
-          <Typography gutterBottom>
-            Assign a department to handle this incident:
+          <Typography gutterBottom sx={{ mb: 2 }}>
+            {selectedIncidents.length > 0
+              ? `Select department for ${selectedIncidents.length} incidents:`
+              : `Select department for incident ${selectedIncident?._id?.substring(
+                  0,
+                  8
+                )}:`}
           </Typography>
-          {selectedIncident && (
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Incident: {selectedIncident.description?.substring(0, 100)}...
-            </Typography>
-          )}
-          <FormControl fullWidth sx={{ mt: 2 }}>
+          <FormControl fullWidth>
             <InputLabel>Select Department</InputLabel>
             <Select
+              value={assignDepartment}
               label="Select Department"
-              // Add value and onChange handlers
-              defaultValue=""
+              onChange={(e) => setAssignDepartment(e.target.value)}
             >
               <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
               <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+              <MenuItem value="Rescue 1122">Rescue 1122</MenuItem>
             </Select>
           </FormControl>
+          {selectedIncidents.length > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              This will assign all {selectedIncidents.length} selected incidents
+              to {assignDepartment}.
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button
-            onClick={() => setAssignDialogOpen(false)}
+            onClick={() => {
+              setAssignDialogOpen(false);
+              setAssignDepartment("");
+            }}
             sx={{
               color: "#64748B",
               fontWeight: 600,
@@ -1673,18 +1791,97 @@ const AdminDashboard: React.FC = () => {
             Cancel
           </Button>
           <Button
+            onClick={
+              selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
+            }
+            color="primary"
             variant="contained"
-            onClick={() => {
-              // Handle assignment logic here
-              showSnackbar("Incident assigned successfully", "success");
-              setAssignDialogOpen(false);
-            }}
+            disabled={!assignDepartment}
             sx={{
               borderRadius: "12px",
+              textTransform: "none",
               fontWeight: 600,
+              px: 3,
+              py: 1,
             }}
           >
-            Assign & Approve
+            {selectedIncidents.length > 0
+              ? "Assign Selected"
+              : "Approve & Assign"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={() => {
+          setRejectDialogOpen(false);
+          setRejectReason("");
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          {selectedIncidents.length > 0
+            ? "Reject Selected Incidents"
+            : "Reject Incident"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            {selectedIncidents.length > 0
+              ? `Please provide a reason for rejecting ${selectedIncidents.length} incidents:`
+              : `Please provide a reason for rejecting incident ${selectedIncident?._id?.substring(
+                  0,
+                  8
+                )}:`}
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Rejection Reason"
+            fullWidth
+            multiline
+            rows={4}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => {
+              setRejectDialogOpen(false);
+              setRejectReason("");
+            }}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmReject}
+            color="error"
+            variant="contained"
+            sx={{
+              borderRadius: "12px",
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+              py: 1,
+            }}
+          >
+            Reject
           </Button>
         </DialogActions>
       </Dialog>
@@ -2334,6 +2531,39 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Bulk Actions Menu */}
+      <Menu
+        anchorEl={bulkMenuAnchor}
+        open={Boolean(bulkMenuAnchor)}
+        onClose={() => setBulkMenuAnchor(null)}
+      >
+        <MenuItem onClick={() => handleBulkAction("approve")}>
+          <ListItemIcon>
+            <ApproveIcon fontSize="small" />
+          </ListItemIcon>
+          Approve Selected
+        </MenuItem>
+        <MenuItem onClick={() => handleBulkAction("reject")}>
+          <ListItemIcon>
+            <RejectIcon fontSize="small" />
+          </ListItemIcon>
+          Reject Selected
+        </MenuItem>
+        <MenuItem onClick={() => handleBulkAction("assign")}>
+          <ListItemIcon>
+            <DepartmentIcon fontSize="small" />
+          </ListItemIcon>
+          Assign Department
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleBulkAction("clear")}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          Clear Selection
+        </MenuItem>
+      </Menu>
 
       {/* User Actions Menu */}
       <Menu
