@@ -36,6 +36,8 @@ import {
   CircularProgress,
   Fab,
   Divider,
+  LinearProgress,
+  CardMedia,
 } from "@mui/material";
 import {
   CheckCircle as ApproveIcon,
@@ -82,6 +84,40 @@ import IncidentMap from "../components/IncidentMap";
 
 // Date utilities
 import { format, formatDistanceToNow, parseISO } from "date-fns";
+
+// Add API URL constant from your second code
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+// Add getPhotoUrl function from your second code
+const getPhotoUrl = (photo: any): string => {
+  if (!photo) return "";
+
+  console.log("📷 Processing photo:", photo);
+
+  // If we have a direct URL, use it
+  if (photo.url && typeof photo.url === "string") {
+    console.log("📷 Using photo.url:", photo.url);
+    return photo.url;
+  }
+
+  // If we have a filename, construct the URL from your backend structure
+  if (photo.filename && typeof photo.filename === "string") {
+    const url = `/api/upload/image/${photo.filename}`;
+    console.log("📷 Generated URL from filename:", url);
+    return url;
+  }
+
+  // If we have a GridFS file ID
+  if (photo._id || photo.id) {
+    const fileId = photo._id || photo.id;
+    const url = `/api/upload/image/${fileId}`;
+    console.log("📷 Generated URL from ID:", url);
+    return url;
+  }
+
+  console.log("📷 No valid photo data found");
+  return "";
+};
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1307,253 +1343,237 @@ const AdminDashboard: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           {selectedIncident && (
-            <Box sx={{ mt: 2 }}>
+            <Box>
               <Grid container spacing={3}>
-                {/* Incident Overview */}
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Location
-                    </Typography>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        bgcolor: "#f8fafc",
-                        borderRadius: 2,
-                        border: "1px solid #e2e8f0",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <LocationIcon fontSize="small" color="primary" />
-                        <Typography variant="body1" fontWeight={500}>
-                          {selectedIncident.location?.address ||
-                            "Unknown location"}
-                        </Typography>
-                      </Box>
-                      {selectedIncident.location?.coordinates && (
-                        <Typography variant="caption" color="text.secondary">
-                          Coordinates:{" "}
-                          {Array.isArray(selectedIncident.location.coordinates)
-                            ? `${selectedIncident.location.coordinates[0]?.toFixed(
-                                6
-                              )}, ${selectedIncident.location.coordinates[1]?.toFixed(
-                                6
-                              )}`
-                            : `${selectedIncident.location.coordinates.lat?.toFixed(
-                                6
-                              )}, ${selectedIncident.location.coordinates.lng?.toFixed(
-                                6
-                              )}`}
-                        </Typography>
-                      )}
-                    </Paper>
-                  </Box>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    {selectedIncident.description || "No description"}
+                  </Typography>
+                  
+                  {/* Added Photo Display Section */}
+                  {selectedIncident.photos && selectedIncident.photos.length > 0 ? (
+                    <Box sx={{ mt: 2, mb: 3 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Photos ({selectedIncident.photos.length}):
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedIncident.photos.map((photo, index) => {
+                          // Get the URL using our helper function
+                          const photoUrl = getPhotoUrl(photo);
 
-                  {/* Reporter Information */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Reported By
-                    </Typography>
-                    <Paper
-                      elevation={0}
+                          // Construct the full URL
+                          const fullUrl = photoUrl
+                            ? photoUrl.startsWith("http")
+                              ? photoUrl
+                              : `${API_URL}${photoUrl}`
+                            : "";
+
+                          console.log(`📷 Photo ${index} full URL:`, fullUrl);
+
+                          return (
+                            <Grid item xs={4} key={index}>
+                              {fullUrl ? (
+                                <Box sx={{ position: "relative" }}>
+                                  <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={fullUrl}
+                                    alt={
+                                      photo.originalName ||
+                                      `Incident photo ${index + 1}`
+                                    }
+                                    sx={{
+                                      borderRadius: 1,
+                                      objectFit: "cover",
+                                      width: "100%",
+                                    }}
+                                    onError={(e) => {
+                                      console.error(
+                                        `❌ Failed to load image ${index}:`,
+                                        fullUrl
+                                      );
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
+
+                                      // Show error placeholder
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        const errorDiv =
+                                          document.createElement("div");
+                                        errorDiv.style.cssText = `
+                                          height: 140px;
+                                          display: flex;
+                                          flex-direction: column;
+                                          align-items: center;
+                                          justify-content: center;
+                                          background-color: #ffebee;
+                                          border: 1px solid #ffcdd2;
+                                          border-radius: 4px;
+                                          padding: 8px;
+                                          text-align: center;
+                                        `;
+                                        errorDiv.innerHTML = `
+                                          <div style="color: #d32f2f; font-size: 14px; margin-bottom: 4px;">⚠️ Image failed to load</div>
+                                          <div style="color: #757575; font-size: 12px;">${
+                                            photo.filename || "Unknown file"
+                                          }</div>
+                                        `;
+                                        parent.appendChild(errorDiv);
+                                      }
+                                    }}
+                                    onLoad={() => {
+                                      console.log(
+                                        `✅ Successfully loaded image ${index}:`,
+                                        fullUrl
+                                      );
+                                    }}
+                                  />
+                                </Box>
+                              ) : (
+                                <Paper
+                                  sx={{
+                                    height: 140,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexDirection: "column",
+                                    borderRadius: 1,
+                                    bgcolor: "#f5f5f5",
+                                    p: 2,
+                                  }}
+                                >
+                                  <Typography
+                                    color="text.secondary"
+                                    variant="body2"
+                                    align="center"
+                                  >
+                                    No Image URL
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.disabled"
+                                    align="center"
+                                  >
+                                    {photo.filename || "No filename"}
+                                  </Typography>
+                                </Paper>
+                              )}
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </Box>
+                  ) : (
+                    <Box
                       sx={{
+                        mt: 2,
+                        mb: 3,
                         p: 2,
-                        bgcolor: "#f8fafc",
-                        borderRadius: 2,
-                        border: "1px solid #e2e8f0",
+                        bgcolor: "#f5f5f5",
+                        borderRadius: 1,
                       }}
                     >
-                      <Typography variant="body1" fontWeight={500}>
-                        {selectedIncident.reportedBy?.name || "Anonymous"}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        align="center"
+                      >
+                        No photos available for this incident
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {selectedIncident.reportedBy?.email || "No email"}
-                        {selectedIncident.reportedBy?.phone &&
-                          ` • ${selectedIncident.reportedBy.phone}`}
-                      </Typography>
-                    </Paper>
-                  </Box>
+                    </Box>
+                  )}
                 </Grid>
-
-                {/* Incident Details - Right Column */}
-                <Grid item xs={12} md={6}>
-                  {/* Category and Severity */}
-                  <Box sx={{ mb: 3 }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Category & Severity
-                    </Typography>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        bgcolor: "#f8fafc",
-                        borderRadius: 2,
-                        border: "1px solid #e2e8f0",
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap={2} mb={1}>
-                        {getCategoryIcon(selectedIncident.category)}
-                        <Box>
-                          <Typography variant="body1" fontWeight={500}>
-                            {selectedIncident.category || "Uncategorized"}
-                          </Typography>
-                          {selectedIncident.severity && (
-                            <Chip
-                              label={`Severity: ${selectedIncident.severity}`}
-                              size="small"
-                              sx={{
-                                mt: 0.5,
-                                bgcolor:
-                                  selectedIncident.severity === "high"
-                                    ? "#fee2e2"
-                                    : selectedIncident.severity === "medium"
-                                    ? "#fef3c7"
-                                    : "#dcfce7",
-                                color:
-                                  selectedIncident.severity === "high"
-                                    ? "#991b1b"
-                                    : selectedIncident.severity === "medium"
-                                    ? "#92400e"
-                                    : "#065f46",
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </Box>
-                    </Paper>
-                  </Box>
-
-                  {/* Additional Information */}
-                  <Box sx={{ mb: 2 }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      gutterBottom
-                    >
-                      Additional Information
-                    </Typography>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        bgcolor: "#f8fafc",
-                        borderRadius: 2,
-                        border: "1px solid #e2e8f0",
-                      }}
-                    >
-                      <Typography variant="body2">
-                        {selectedIncident.additionalInfo ||
-                          "No additional information provided"}
-                      </Typography>
-                    </Paper>
-                  </Box>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Reported By
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedIncident.reportedBy?.name || "Unknown"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {selectedIncident.reportedBy?.email} •{" "}
+                    {selectedIncident.reportedBy?.phone}
+                  </Typography>
                 </Grid>
-
-                {/* Assigned Department */}
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Location
+                  </Typography>
+                  <Typography variant="body1">
+                    {selectedIncident.location?.address || "Unknown location"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Category
+                  </Typography>
+                  <Chip
+                    label={selectedIncident.category}
+                    icon={getCategoryIcon(selectedIncident.category)}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Created At
+                  </Typography>
+                  <Typography variant="body1">
+                    {format(
+                      parseISO(selectedIncident.createdAt),
+                      "MMM dd, yyyy HH:mm:ss"
+                    )}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Last Updated
+                  </Typography>
+                  <Typography variant="body1">
+                    {format(
+                      parseISO(selectedIncident.updatedAt),
+                      "MMM dd, yyyy HH:mm:ss"
+                    )}
+                  </Typography>
+                </Grid>
                 {selectedIncident.assignedTo && (
                   <Grid item xs={12}>
-                    <Divider sx={{ my: 1 }} />
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        Assigned Department
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Assigned To
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body1">
+                        {selectedIncident.assignedTo.department}
                       </Typography>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          bgcolor: "#e0f2fe",
-                          borderRadius: 2,
-                          border: "1px solid #7dd3fc",
-                        }}
-                      >
-                        <Box display="flex" alignItems="center" gap={2}>
-                          <DepartmentIcon color="primary" />
-                          <Box>
-                            <Typography variant="body1" fontWeight={600}>
-                              {selectedIncident.assignedTo.department ||
-                                "Not assigned"}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              Assigned on:{" "}
-                              {format(
-                                parseISO(
-                                  selectedIncident.assignedTo.assignedAt
-                                ),
-                                "MMM dd, yyyy HH:mm"
-                              )}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Paper>
+                      {selectedIncident.assignedTo.driverName && (
+                        <Typography variant="body2" color="text.secondary">
+                          • Driver: {selectedIncident.assignedTo.driverName}
+                        </Typography>
+                      )}
                     </Box>
                   </Grid>
                 )}
-
-                {/* Attachments/Evidence */}
-                {Array.isArray(selectedIncident.media) &&
-                  selectedIncident.media.length > 0 && (
-                    <Grid item xs={12}>
-                      <Divider sx={{ my: 1 }} />
-                      <Box>
-                        <Typography
-                          variant="subtitle2"
-                          color="text.secondary"
-                          gutterBottom
-                        >
-                          Attachments ({selectedIncident.media.length})
-                        </Typography>
-                        <Box display="flex" gap={2} flexWrap="wrap">
-                          {selectedIncident.media.map(
-                            (media: any, index: number) => (
-                              <Paper
-                                key={index}
-                                sx={{
-                                  p: 1,
-                                  borderRadius: 1,
-                                  border: "1px solid #e2e8f0",
-                                  width: 100,
-                                  height: 100,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  bgcolor: "#f8fafc",
-                                }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {media.type === "image"
-                                    ? "📷 Image"
-                                    : "📹 Video"}
-                                </Typography>
-                              </Paper>
-                            )
-                          )}
-                        </Box>
-                      </Box>
-                    </Grid>
-                  )}
+                {selectedIncident.aiDetectionScore && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      AI Detection Score
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={selectedIncident.aiDetectionScore}
+                        sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
+                        color={
+                          selectedIncident.aiDetectionScore >= 80
+                            ? "success"
+                            : "warning"
+                        }
+                      />
+                      <Typography variant="body2" fontWeight={600}>
+                        {selectedIncident.aiDetectionScore}%
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
               </Grid>
             </Box>
           )}
@@ -1603,71 +1623,71 @@ const AdminDashboard: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Add this Dialog after the View Incident Dialog */}
-<Dialog
-  open={assignDialogOpen}
-  onClose={() => setAssignDialogOpen(false)}
-  PaperProps={{
-    sx: {
-      borderRadius: 3,
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
-    },
-  }}
->
-  <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
-    Assign Department
-  </DialogTitle>
-  <DialogContent>
-    <Typography gutterBottom>
-      Assign a department to handle this incident:
-    </Typography>
-    {selectedIncident && (
-      <Typography variant="body2" color="text.secondary" gutterBottom>
-        Incident: {selectedIncident.description?.substring(0, 100)}...
-      </Typography>
-    )}
-    <FormControl fullWidth sx={{ mt: 2 }}>
-      <InputLabel>Select Department</InputLabel>
-      <Select
-        label="Select Department"
-        // Add value and onChange handlers
-        defaultValue=""
+      {/* Assign Department Dialog */}
+      <Dialog
+        open={assignDialogOpen}
+        onClose={() => setAssignDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.12)",
+          },
+        }}
       >
-        <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
-        <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
-      </Select>
-    </FormControl>
-  </DialogContent>
-  <DialogActions sx={{ p: 3 }}>
-    <Button
-      onClick={() => setAssignDialogOpen(false)}
-      sx={{
-        color: "#64748B",
-        fontWeight: 600,
-        borderRadius: "12px",
-        "&:hover": {
-          backgroundColor: "rgba(100, 116, 139, 0.08)",
-        },
-      }}
-    >
-      Cancel
-    </Button>
-    <Button
-      variant="contained"
-      onClick={() => {
-        // Handle assignment logic here
-        showSnackbar("Incident assigned successfully", "success");
-        setAssignDialogOpen(false);
-      }}
-      sx={{
-        borderRadius: "12px",
-        fontWeight: 600,
-      }}
-    >
-      Assign & Approve
-    </Button>
-  </DialogActions>
-</Dialog>
+        <DialogTitle sx={{ fontWeight: 700, color: "#111827" }}>
+          Assign Department
+        </DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            Assign a department to handle this incident:
+          </Typography>
+          {selectedIncident && (
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Incident: {selectedIncident.description?.substring(0, 100)}...
+            </Typography>
+          )}
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Select Department</InputLabel>
+            <Select
+              label="Select Department"
+              // Add value and onChange handlers
+              defaultValue=""
+            >
+              <MenuItem value="Edhi Foundation">Edhi Foundation</MenuItem>
+              <MenuItem value="Chippa Ambulance">Chippa Ambulance</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={() => setAssignDialogOpen(false)}
+            sx={{
+              color: "#64748B",
+              fontWeight: 600,
+              borderRadius: "12px",
+              "&:hover": {
+                backgroundColor: "rgba(100, 116, 139, 0.08)",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              // Handle assignment logic here
+              showSnackbar("Incident assigned successfully", "success");
+              setAssignDialogOpen(false);
+            }}
+            sx={{
+              borderRadius: "12px",
+              fontWeight: 600,
+            }}
+          >
+            Assign & Approve
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* View User Details Dialog */}
       <Dialog
