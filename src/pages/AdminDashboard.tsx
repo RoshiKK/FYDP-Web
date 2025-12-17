@@ -1070,104 +1070,104 @@ const AdminDashboard: React.FC = () => {
 
       {/* Processed Tab */}
       <TabPanel value={tabValue} index={1}>
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: 3,
-            background: "#fff",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: "#f9fafb" }}>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  ID
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Description
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Category
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Department
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Status
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Reported By
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Date
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {processedIncidents.map((incident) => (
-                <TableRow key={incident._id} hover>
-                  <TableCell>
-                    <Typography fontWeight={600}>
-                      {incident._id?.substring(0, 8)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography noWrap sx={{ maxWidth: 300 }}>
-                      {incident.description || "No description"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={incident.category}
-                      size="small"
-                      icon={getCategoryIcon(incident.category)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {incident.assignedTo?.department || "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={incident.status}
-                      size="small"
-                      sx={{
-                        bgcolor: `${
-                          statusColors[incident.status] || "#6B7280"
-                        }20`,
-                        color: statusColors[incident.status] || "#6B7280",
-                        fontWeight: 600,
-                      }}
-                      icon={getStatusIcon(incident.status)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {incident.reportedBy?.name || "Unknown"}
-                  </TableCell>
-                  <TableCell>
-                    {format(parseISO(incident.createdAt), "MMM dd, yyyy HH:mm")}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setSelectedIncident(incident);
-                        setAssignDialogOpen(true);
-                        setViewDialogOpen(true);
-                      }}
-                    >
-                      <ViewIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </TabPanel>
+  <TableContainer
+    component={Paper}
+    sx={{
+      borderRadius: 3,
+      background: "#fff",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+    }}
+  >
+    <Table>
+      <TableHead>
+        <TableRow sx={{ bgcolor: "#f9fafb" }}>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            ID
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Description
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Category
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Department
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Status
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Reported By
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Date
+          </TableCell>
+          <TableCell sx={{ fontWeight: 700, color: "#111827" }}>
+            Actions
+          </TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {processedIncidents.map((incident) => (
+          <TableRow key={incident._id} hover>
+            <TableCell>
+              <Typography fontWeight={600}>
+                {incident._id?.substring(0, 8)}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography noWrap sx={{ maxWidth: 300 }}>
+                {incident.description || "No description"}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Chip
+                label={incident.category}
+                size="small"
+                icon={getCategoryIcon(incident.category)}
+              />
+            </TableCell>
+            <TableCell>
+              {incident.assignedTo?.department || "-"}
+            </TableCell>
+            <TableCell>
+              <Chip
+                label={incident.status}
+                size="small"
+                sx={{
+                  bgcolor: `${
+                    statusColors[incident.status] || "#6B7280"
+                  }20`,
+                  color: statusColors[incident.status] || "#6B7280",
+                  fontWeight: 600,
+                }}
+                icon={getStatusIcon(incident.status)}
+              />
+            </TableCell>
+            <TableCell>
+              {incident.reportedBy?.name || "Unknown"}
+            </TableCell>
+            <TableCell>
+              {format(parseISO(incident.createdAt), "MMM dd, yyyy HH:mm")}
+            </TableCell>
+            <TableCell>
+              {/* FIX: Only open view dialog, not assign dialog */}
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSelectedIncident(incident);
+                  setViewDialogOpen(true); // Only open view dialog
+                }}
+              >
+                <ViewIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+</TabPanel>
 
       {/* Map View Tab */}
       <TabPanel value={tabValue} index={2}>
