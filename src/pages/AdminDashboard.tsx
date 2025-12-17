@@ -460,6 +460,8 @@ const AdminDashboard: React.FC = () => {
     getUserStats,
     rejectIncident,
     bulkRejectIncidents,
+    bulkApproveIncidents,
+    approveIncident, // Add this
   } = useAuth();
 
   // State management
@@ -622,48 +624,50 @@ const AdminDashboard: React.FC = () => {
 
   // ========== INCIDENT APPROVE/ASSIGN FUNCTIONS ==========
 
-  const confirmApprove = async () => {
-  if (!selectedIncident) {
-    showSnackbar("No incident selected", "warning");
-    return;
-  }
-  
+ const confirmApprove = async () => {
   if (!assignDepartment) {
     showSnackbar("Please select a department", "warning");
     return;
   }
 
   try {
-    console.log("Approving incident:", selectedIncident._id);
+    console.log("Approving incidents...");
+    console.log("Selected incidents:", selectedIncidents);
+    console.log("Selected incident:", selectedIncident);
     console.log("Assigning to department:", assignDepartment);
 
-    const incidentIds =
-      selectedIncidents.length > 0
-        ? selectedIncidents
-        : [selectedIncident._id];
-
     if (selectedIncidents.length > 0) {
-      // Bulk approve
+      // Bulk approve selected incidents
+      await bulkApproveIncidents(selectedIncidents, assignDepartment);
       showSnackbar(
-        `${incidentIds.length} incidents approved and assigned to ${assignDepartment}`,
+        `${selectedIncidents.length} incidents approved and assigned to ${assignDepartment}`,
         "success"
       );
-    } else {
-      // Single approve
+    } else if (selectedIncident) {
+      // Single incident approval
+      await approveIncident(selectedIncident._id, assignDepartment);
       showSnackbar(
         `Incident approved and assigned to ${assignDepartment}`,
         "success"
       );
+    } else {
+      showSnackbar("No incident selected", "warning");
+      return;
     }
 
+    // Refresh data
     await loadDashboardData();
     
-    // CLOSE BOTH DIALOGS
+    // Clear state and close dialogs
     setAssignDialogOpen(false);
-    setViewDialogOpen(false); // This closes the view details dialog
     setAssignDepartment("");
     setSelectedIncidents([]);
-    setSelectedIncident(null); // Also clear the selected incident
+    
+    // Also close view dialog if it's open
+    if (viewDialogOpen) {
+      setViewDialogOpen(false);
+      setSelectedIncident(null);
+    }
     
   } catch (error: any) {
     console.error("Error approving incident:", error);
@@ -716,6 +720,8 @@ const AdminDashboard: React.FC = () => {
   }
 
   try {
+    // Call the bulk approve API
+    await bulkApproveIncidents(selectedIncidents, assignDepartment);
     
     showSnackbar(
       `${selectedIncidents.length} incidents assigned to ${assignDepartment}`,
@@ -724,15 +730,10 @@ const AdminDashboard: React.FC = () => {
     
     await loadDashboardData();
     
-    // CLOSE THE ASSIGN DIALOG
+    // Clear state and close dialogs
     setAssignDialogOpen(false);
     setAssignDepartment("");
     setSelectedIncidents([]);
-    
-    // Also close view dialog if it's open
-    if (viewDialogOpen) {
-      setViewDialogOpen(false);
-    }
     
   } catch (error: any) {
     console.error("Error bulk assigning incidents:", error);
@@ -1802,42 +1803,44 @@ const AdminDashboard: React.FC = () => {
     )}
   </DialogContent>
   <DialogActions sx={{ p: 3 }}>
-    <Button
-      onClick={() => {
-        setAssignDialogOpen(false);
-        setAssignDepartment("");
-      }}
-      sx={{
-        color: "#64748B",
-        fontWeight: 600,
-        borderRadius: "12px",
-        "&:hover": {
-          backgroundColor: "rgba(100, 116, 139, 0.08)",
-        },
-      }}
-    >
-      Cancel
-    </Button>
-    <Button
-      onClick={
-        selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
-      }
-      color="primary"
-      variant="contained"
-      disabled={!assignDepartment}
-      sx={{
-        borderRadius: "12px",
-        textTransform: "none",
-        fontWeight: 600,
-        px: 3,
-        py: 1,
-      }}
-    >
-      {selectedIncidents.length > 0
-        ? `Assign to ${assignDepartment}`
-        : "Approve & Assign"}
-    </Button>
-  </DialogActions>
+  <Button
+    onClick={() => {
+      setAssignDialogOpen(false);
+      setAssignDepartment("");
+    }}
+    sx={{
+      color: "#64748B",
+      fontWeight: 600,
+      borderRadius: "12px",
+      "&:hover": {
+        backgroundColor: "rgba(100, 116, 139, 0.08)",
+      },
+    }}
+  >
+    Cancel
+  </Button>
+  <Button
+    onClick={
+      selectedIncidents.length > 0 ? confirmBulkAssign : confirmApprove
+    }
+    color="primary"
+    variant="contained"
+    disabled={!assignDepartment}
+    sx={{
+      borderRadius: "12px",
+      textTransform: "none",
+      fontWeight: 600,
+      px: 3,
+      py: 1,
+    }}
+  >
+    {selectedIncidents.length > 0
+      ? `Assign ${selectedIncidents.length} Incidents`
+      : selectedIncident
+      ? "Approve & Assign"
+      : "Assign"}
+  </Button>
+</DialogActions>
 </Dialog>
 
       {/* Reject Dialog */}

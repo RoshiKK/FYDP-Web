@@ -369,6 +369,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  
+
   // Logout function
   const logout = async () => {
     try {
