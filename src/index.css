@@ -2,6 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  
 }
 
 body {
@@ -12,9 +13,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #F1F5F9;
   background-image: 
-    radial-gradient(at 40% 20%, rgba(139, 92, 246, 0.05) 0px, transparent 50%),
+    radial-gradient(at 40% 20%, rgba(246, 92, 92, 0.942) 0px, transparent 50%), 
     radial-gradient(at 80% 80%, rgba(15, 23, 42, 0.03) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.03) 0px, transparent 50%);
+    radial-gradient(at 0% 100%, rgba(246, 92, 246, 0.03) 0px, transparent 50%);
   min-height: 100vh;
 }
 
@@ -35,19 +36,19 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #f65c5ce1 0%, #ed3a5272 100%);
   border-radius: 10px;
   border: 2px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+  background: linear-gradient(135deg, #ed3a4fe2 0%, #d9284be8 100%);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #8B5CF6 #f1f5f9;
+  scrollbar-color: #de2641 #f1f5f9;
 }
 
 /* Smooth scroll */
@@ -57,7 +58,7 @@ html {
 
 /* Selection styling */
 ::selection {
-  background-color: rgba(139, 92, 246, 0.3);
+  background-color: rgba(225, 7, 33, 0.966); */
   color: inherit;
 }
 
@@ -110,13 +111,13 @@ button {
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 0 0 rgba(231, 9, 9, 0.4);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+    box-shadow: 0 0 0 10px rgba(216, 6, 52, 0.9);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+    box-shadow: 0 0 0 0 rgba(246, 92, 102, 0.919);
   }
 }
 

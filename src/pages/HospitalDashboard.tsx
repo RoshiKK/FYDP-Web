@@ -354,25 +354,25 @@ const HospitalDashboard: React.FC = () => {
       title: "Today's Admissions", 
       value: totalCases.toString(), 
       icon: <HospitalIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)'
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)'
     },
     { 
       title: "Incoming", 
       value: incomingCases.toString(), 
       icon: <AmbulanceIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)'
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)'
     },
     { 
       title: "Admitted", 
       value: admittedCases.toString(), 
       icon: <PersonIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)'
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)'
     },
     { 
       title: "Discharged", 
       value: dischargedCases.toString(), 
       icon: <CheckIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)'
+     color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)'
     },
   ];
 
@@ -452,14 +452,16 @@ const HospitalDashboard: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box
-        sx={{
-          backgroundColor: '#ffebeb',
-          minHeight: '100vh',
-          p: 3,
-        }}
-      >
+    <Container
+        disableGutters // 👈 extra horizontal padding remove
+         maxWidth={false}
+           sx={{
+  py: 6,
+  px: { xs: 2, sm: 4, md: 6 },
+  minHeight: "100vh",
+  backgroundColor: "#ffffff",
+}}
+  >
         {/* Header Section */}
         <Box sx={{ mb: 4 }} textAlign="center">
           <Typography variant="h3" fontWeight={800} sx={{ color: '#111827' }}>
@@ -828,7 +830,7 @@ const HospitalDashboard: React.FC = () => {
           <Grid item xs={12} md={8}>
             {/* Recent Activity would go here */}
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12}>
             <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>Department Status</Typography>
               <TableContainer>
@@ -1043,7 +1045,6 @@ const HospitalDashboard: React.FC = () => {
             ))
           )}
         </Menu>
-      </Box>
     </Container>
   );
 };

@@ -23,7 +23,7 @@ export const getCurrentUserDisplay = () => {
     };
   }
   return {
-    title: 'Super Admin Control',
+    title: 'SUPERADMIN DASHBOARD',
     subtitle: 'Complete System Management',
     isImpersonation: false
   };

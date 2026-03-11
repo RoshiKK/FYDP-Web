@@ -152,7 +152,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const drawer = (
     <Box sx={{ 
       height: '100%', 
-      background: 'linear-gradient(180deg, #000000 0%, #FF3B30 100%)',
+      background: 'transparent',
       position: 'relative',
       '&::before': {
         content: '""',
@@ -174,7 +174,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Box sx={{
             width: 48,
             height: 48,
-            background: 'linear-gradient(135deg, #FF3B30 0%, #FF3B30 100%)',
+            background: 'linear-gradient(135deg, #7a3531dd 0%, #2c2929d0 100%)',
             borderRadius: 2,
             display: 'flex',
             alignItems: 'center',
@@ -211,7 +211,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 transition: 'all 0.2s ease',
                 position: 'relative',
                 overflow: 'hidden',
-                backgroundColor: location.pathname === '/' ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                backgroundColor: location.pathname === '/' ? 'rgba(227, 15, 15, 0.72)' : 'transparent',
                 '&::before': {
                   content: '""',
                   position: 'absolute',
@@ -220,12 +220,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   transform: 'translateY(-50%)',
                   width: location.pathname === '/' ? 4 : 0,
                   height: '70%',
-                  backgroundColor: '#fF3B30',
+                  backgroundColor: '#ad2a23e3',
                   borderRadius: '0 4px 4px 0',
                   transition: 'width 0.2s ease',
                 },
                 '&:hover': {
-                  backgroundColor: location.pathname === '/' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                  backgroundColor: location.pathname === '/' ? 'rgba(145, 33, 33, 0.76)' : 'rgba(255,255,255,0.05)',
                   color: 'white',
                   '&::before': {
                     width: 4,
@@ -245,7 +245,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: location.pathname === '/' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                  backgroundColor: location.pathname === '/' ? 'rgba(195, 77, 108, 0.91)' : 'rgba(255,255,255,0.05)',
                   transition: 'all 0.2s ease',
                 }}>
                   <DashboardIcon fontSize="small" />
@@ -275,7 +275,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     transition: 'all 0.2s ease',
                     position: 'relative',
                     overflow: 'hidden',
-                    backgroundColor: isActive ? 'rgba(139, 92, 246, 0.15)' : 'transparent',
+                    backgroundColor: isActive ? 'rgba(246, 92, 113, 0.88)' : 'transparent',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -289,7 +289,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       transition: 'width 0.2s ease',
                     },
                     '&:hover': {
-                      backgroundColor: isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                      backgroundColor: isActive ? 'rgba(233, 31, 109, 0.99)' : 'rgba(219, 96, 96, 0.87)',
                       color: 'white',
                       '&::before': {
                         width: 4,
@@ -309,7 +309,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      backgroundColor: isActive ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.05)',
+                      backgroundColor: isActive ? 'rgba(187, 24, 59, 0.76)' : 'rgba(255,255,255,0.05)',
                       transition: 'all 0.2s ease',
                     }}>
                       {React.cloneElement(item.icon as React.ReactElement<any>, { 
@@ -356,7 +356,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+  <Box
+    sx={{
+      display: 'flex',
+      minHeight: '100vh',
+      background: `
+        radial-gradient(circle at 20% 20%, rgba(209, 74, 70, 0.74), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(129, 33, 28, 0.25), transparent 40%),
+        linear-gradient(135deg, #1c1c1c 0%, #3a0d1d 40%, #7a1f1f 75%, #712622e6 100%)
+      `,
+      backgroundAttachment: 'fixed'
+    }}
+  >
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -364,10 +375,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid',
-          borderColor: 'rgba(0, 0, 0, 0.06)',
+          backgroundColor: 'rgba(0,0,0,0.25)',
+          backdropFilter: 'blur(16px)',
+          color: 'white',
+          borderColor: 'rgba(255,255,255,0.08)',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
         }}
       >
@@ -376,7 +387,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' }, color: 'text.primary' }}
+            sx={{ mr: 2, display: { sm: 'none' }, color: 'w' }}
           >
             <MenuIcon />
           </IconButton>
@@ -391,12 +402,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h5" noWrap component="div" sx={{ 
               fontWeight: 600,
-              color: 'text.primary',
+              color: 'white',
               mb: 0.5
             }}>
               {user?.role ? `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard` : 'Dashboard'}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <Typography variant="caption" sx={{ color: 'white' }}>
               Welcome back, {user?.name || 'User'}
               {user?.isImpersonation && (
                 <span style={{ color: '#FF3B30', fontWeight: 'bold', marginLeft: '8px' }}>
@@ -440,9 +451,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               sx={{ 
                 width: 40, 
                 height: 40,
-                background: 'linear-gradient(135deg, #ddd7ecff 0%, #FF3B30 100%)',
+                background: 'linear-gradient(135deg, rgb(250, 44, 44) 0%, #FF3B30 100%)',
                 fontWeight: 600,
-                boxShadow: '0 4px 14px 0 rgba(139, 92, 246, 0.4)',
+                boxShadow: '0 4px 14px 0 rgba(194, 30, 30, 0.09)',
               }}
             >
               {user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -513,7 +524,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+            background: 'transparent',
+            borderRight: '1px solid rgba(255,255,255,0.08)'
+},
           }}
         >
           {drawer}
@@ -522,7 +538,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              background: 'transparent',
+              borderRight: '1px solid rgba(255,255,255,0.08)'
+},
           }}
           open
         >
@@ -531,21 +552,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Box>
       
       <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: { xs: 2, sm: 3, md: 4, lg: 5 },
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          mt: '72px',
-          backgroundColor: 'background.default',
-          minHeight: 'calc(100vh - 72px)',
-          maxWidth: '1600px',
-          mx: 'auto',
-        }}
-      >
-        {children || <Outlet />}
+  component="main"
+  sx={{
+    flexGrow: 1,
+    p: 0,           // padding zero
+    mt: 0,          // top margin remove
+    background: 'transparent',
+    minHeight: '100vh',
+    // width: { xs: '100%', sm: `calc(100% - ${drawerWidth}px)` },
+    width: '100%',
+      // ml: { sm: `${drawerWidth}px` },
+  }}
+>
+  {/* Inner Box for spacing content below AppBar */}
+  <Box sx={{ pt: '72px', px: { xs: 2, sm: 3 } }}>
+    {children || <Outlet />}
+  </Box>
+</Box>
       </Box>
-    </Box>
+
+      
   );
 };
 

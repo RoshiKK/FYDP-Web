@@ -819,21 +819,23 @@ const SuperAdminDashboard: React.FC = () => {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "center",
           alignItems: "center",
           mb: 4,
+          position: "relative",
+          width: "100%"
         }}
       >
-        <Box>
-          <Typography variant="h4" fontWeight={700} color="text.primary">
-            {isImpersonating ? 'User Dashboard' : 'Super Admin Control'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {isImpersonating 
-              ? `Viewing as ${currentUser?.name} (${currentUser?.role})`
-              : 'Complete System Management'}
-          </Typography>
-        </Box>
+        <Box sx={{ textAlign: "center" }}>
+    <Typography variant="h3" fontWeight={700} color="text.primary">
+      {isImpersonating ? 'User Dashboard' : 'SUPERADMIN DASHBOARD'}
+    </Typography>
+    <Typography variant="body2" color="text.secondary">
+      {isImpersonating 
+        ? `Viewing as ${currentUser?.name} (${currentUser?.role})`
+        : 'Complete System Management'}
+    </Typography>
+  </Box>
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
           {/* Show "Return to Super Admin" button if currently impersonating */}
           {isImpersonating && (
@@ -844,10 +846,10 @@ const SuperAdminDashboard: React.FC = () => {
               onClick={handleReturnToSuperAdmin}
               disabled={isLoggingIn}
               sx={{
-                background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+                background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
                 color: "white",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+                  background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
                 },
               }}
             >
@@ -944,8 +946,8 @@ const SuperAdminDashboard: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3} key={index}>
                     <Card
                       sx={{
-                        background: stat.color,
-                        color: "#fff",
+                        background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
+                        backgroundColor: "linear-gradient(180deg, #fffffff0 0%, #fef2f2 100%)",
                         borderRadius: 2,
                         height: "100%",
                         transition: "transform 0.2s",
@@ -2289,7 +2291,7 @@ const SuperAdminDashboard: React.FC = () => {
                   sx={{
                     width: 80,
                     height: 80,
-                    mx: 'auto',
+                    // mx: 'auto',
                     mb: 3,
                     bgcolor: '#FF3B30',
                   }}
@@ -2452,7 +2454,7 @@ const SuperAdminDashboard: React.FC = () => {
             position: "fixed",
             bottom: 24,
             right: 24,
-            background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+            background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%",
             animation: refreshPulse ? "pulse 1s infinite" : "none",
             "@keyframes pulse": {
               "0%": { transform: "scale(1)" },
@@ -2460,7 +2462,7 @@ const SuperAdminDashboard: React.FC = () => {
               "100%": { transform: "scale(1)" },
             },
             "&:hover": {
-              background: "linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)",
+              background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
             },
           }}
         >
@@ -2703,7 +2705,7 @@ const SuperAdminDashboard: React.FC = () => {
             onClick={handleSaveNewUser}
             variant="contained"
             sx={{
-              background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+              background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
             }}
           >
             Create User
@@ -3110,7 +3112,7 @@ const SuperAdminDashboard: React.FC = () => {
             variant="contained"
             disabled={isSaving}
             sx={{
-              background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+              background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
               "&:disabled": {
                 background: "grey.300",
               },

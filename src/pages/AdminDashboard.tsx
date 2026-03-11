@@ -216,7 +216,7 @@ const getRoleIcon = (role: string) => {
 const StatCard = ({ title, value, icon, subtitle }: any) => (
   <Card
     sx={{
-      background: "linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)",
+      background: "linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)",
       color: "#fff",
       borderRadius: 3,
       height: "100%",
@@ -271,7 +271,7 @@ const IncidentCard = ({
       elevation={2}
       sx={{
         borderRadius: 3,
-        background: "#fff",
+        background: 'transparent',
         transition: "transform 0.18s ease, box-shadow 0.18s ease",
         display: "flex",
         flexDirection: "column",
@@ -908,15 +908,17 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  return (
-    <Container
-      maxWidth="xl"
+      return (
+  <Container
+    disableGutters // 👈 extra horizontal padding remove
+    maxWidth={false} // 👈 Container ko full width bana do
       sx={{
-        py: 6,
-        minHeight: "100vh",
-        background: "linear-gradient(180deg, #ffe5e5 0%, #fef2f2 100%)",
-      }}
-    >
+    py: 6,
+    px: { xs: 2, sm: 4, md: 6 },
+    minHeight: "100vh",
+    backgroundColor: "#ffffff",
+  }}
+  >
       {/* Header */}
       <Box mb={6} textAlign="center">
         <Typography variant="h3" fontWeight={800} sx={{ color: "#111827" }}>
@@ -1713,7 +1715,14 @@ const AdminDashboard: React.FC = () => {
             </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button
             onClick={() => setViewDialogOpen(false)}
             sx={{
@@ -1721,7 +1730,7 @@ const AdminDashboard: React.FC = () => {
               fontWeight: 600,
               borderRadius: "12px",
               "&:hover": {
-                backgroundColor: "rgba(100, 116, 139, 0.08)",
+                backgroundColor: "rgba(218, 15, 32, 0.08)",
               },
             }}
           >
@@ -1802,7 +1811,14 @@ const AdminDashboard: React.FC = () => {
       </Alert>
     )}
   </DialogContent>
-  <DialogActions sx={{ p: 3 }}>
+  <DialogActions
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
   <Button
     onClick={() => {
       setAssignDialogOpen(false);
@@ -1883,7 +1899,14 @@ const AdminDashboard: React.FC = () => {
             sx={{ mt: 2 }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button
             onClick={() => {
               setRejectDialogOpen(false);
@@ -2075,7 +2098,14 @@ const AdminDashboard: React.FC = () => {
             </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button
             onClick={() => setViewUserDialogOpen(false)}
             sx={{
@@ -2302,7 +2332,14 @@ const AdminDashboard: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions 
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button
             onClick={() => {
               setEditUserDialogOpen(false);
@@ -2452,7 +2489,14 @@ const AdminDashboard: React.FC = () => {
             )}
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button
             onClick={() => setUserDialogOpen(false)}
             sx={{

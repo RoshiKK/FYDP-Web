@@ -69,7 +69,7 @@ const Unauthorized: React.FC = () => {
             variant="h4"
             sx={{
               fontWeight: 'bold',
-              color: 'text.primary',
+              color: 'white',
               mb: 2,
             }}
           >

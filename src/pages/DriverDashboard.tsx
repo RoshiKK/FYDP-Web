@@ -544,7 +544,7 @@ const DriverDashboard: React.FC = () => {
   // Loading state
   if (isLoading && !isRefreshing) {
     return (
-      <Container maxWidth="lg" sx={{ 
+      <Box sx={{ width: '100%', p: 0, m: 0 }}>
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
@@ -552,20 +552,27 @@ const DriverDashboard: React.FC = () => {
         flexDirection: 'column',
         gap: 3,
         backgroundColor: '#ffe5e5'
-      }}>
         <CircularProgress size={60} />
         <Typography variant="h6" color="text.secondary">
           Loading driver dashboard...
         </Typography>
-      </Container>
+      </Box>
     );
   }
 
-  return (
-    <Container maxWidth="lg" sx={{ py: 4, minHeight: '100vh', backgroundColor: '#ffe5e5' }}>
+  return (<Container
+          disableGutters // 👈 extra horizontal padding remove
+           maxWidth={false}
+          sx={{
+  py: 6,
+  px: { xs: 2, sm: 4, md: 6 },
+  minHeight: "100vh",
+  backgroundColor: "#ffffff",
+}}
+    >
       {/* Dashboard Header */}
       <Box mb={4} textAlign="center">
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
           <Box>
             <Typography variant="h3" fontWeight={800} sx={{ color: '#111827' }}>
               DRIVER DASHBOARD
@@ -578,7 +585,7 @@ const DriverDashboard: React.FC = () => {
             </Typography>
           </Box>
           <Box display="flex" gap={2}>
-            <IconButton 
+            {/* <IconButton 
               onClick={refreshData} 
               disabled={isRefreshing}
               sx={{ 
@@ -608,7 +615,7 @@ const DriverDashboard: React.FC = () => {
               height: 40
             }}>
               {user?.name?.charAt(0).toUpperCase() || 'D'}
-            </Avatar>
+            </Avatar> */}
           </Box>
         </Box>
 
@@ -642,7 +649,7 @@ const DriverDashboard: React.FC = () => {
         {statCards.map((stat, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card sx={{
-              background: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)',
+              background: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
               color: '#fff',
               borderRadius: 3,
               boxShadow: 2,
@@ -690,7 +697,7 @@ const DriverDashboard: React.FC = () => {
       </Box>
 
       {/* Quick Actions */}
-      <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
+      <Grid container spacing={4} justifyContent="center" sx={{ mb: 4 }}>
         <Grid item xs={12}>
           <Card sx={{ backgroundColor: '#fff', borderRadius: 3 }}>
             <CardContent>
@@ -903,14 +910,14 @@ const DriverDashboard: React.FC = () => {
               </Card>
             </Grid>
           ) : (
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12}>
               <Card sx={{ 
                 height: '100%', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 p: 4, 
-                backgroundColor: '#ffe5e5',
+                backgroundColor: '#ffffff',
                 borderRadius: 3
               }}>
                 <Box textAlign="center">
@@ -929,15 +936,15 @@ const DriverDashboard: React.FC = () => {
           {/* Sidebar with Quick Actions and Nearby Hospitals */}
           <Grid item xs={12} md={currentJob ? 4 : 12}>
             {/* Quick Actions */}
-            <Card sx={{ mb: 3, backgroundColor: '#fff', textAlign: 'center', borderRadius: 3 }}>
+            <Card sx={{ mb: 3, backgroundColor: '#fff', textAlign: 'left', borderRadius: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Quick Actions</Typography>
                 <List sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                  <ListItem sx={{ width: '80%' }}>
+                  <ListItem sx={{ width: '100%' }}>
                     <ListItemIcon><PhoneIcon /></ListItemIcon>
                     <ListItemText primary="Emergency Contact" secondary="Call Dispatch" />
                   </ListItem>
-                  <ListItem sx={{ width: '80%' }}>
+                  <ListItem sx={{ width: '100%' }}>
                     <ListItemIcon><NavigateBefore /></ListItemIcon>
                     <ListItemText primary="Navigation" secondary="Open in Maps" />
                   </ListItem>
@@ -946,12 +953,12 @@ const DriverDashboard: React.FC = () => {
             </Card>
 
             {/* Nearby Hospitals */}
-            <Card sx={{ backgroundColor: '#fff', textAlign: 'center', borderRadius: 3 }}>
+            <Card sx={{ backgroundColor: '#fff', textAlign: '', borderRadius: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Nearby Hospitals</Typography>
                 <List dense sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                   {hospitals.filter(h => h.isPinned).map((hospital) => (
-                    <ListItem key={hospital.id} sx={{ width: '90%' }}>
+                    <ListItem key={hospital.id} sx={{ width: '100%' }}>
                       <ListItemIcon><HospitalIcon color="primary" /></ListItemIcon>
                       <ListItemText primary={hospital.name} secondary={`${hospital.type} • ${hospital.distance}`} />
                     </ListItem>

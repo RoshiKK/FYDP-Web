@@ -169,16 +169,16 @@ const ImpersonationBanner = () => {
     }}>
       <span style={{ display: 'flex', alignItems: 'center' }}>
         <span style={{ 
+
           background: 'white', 
           color: '#FF3B30', 
           borderRadius: '50%', 
-          width: '20px', 
-          height: '20px', 
-          display: 'flex', 
+          width: window.innerWidth < 600 ? '24px' : '20px',
+          height: window.innerWidth < 600 ? '24px' : '20px',
+          fontSize: window.innerWidth < 600 ? '14px' : '12px',
+          marginRight: window.innerWidth < 600 ? '10px' : '8px', 
           alignItems: 'center', 
           justifyContent: 'center',
-          marginRight: '8px',
-          fontSize: '12px'
         }}>
           ⚠️
         </span>
@@ -207,7 +207,7 @@ const ImpersonationBanner = () => {
             <div style={{ 
               width: '16px', 
               height: '16px', 
-              border: '2px solid #FF3B30', 
+              border: '2px solid #ff304fcb', 
               borderTopColor: 'transparent',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
@@ -234,12 +234,10 @@ const ImpersonationStatusChecker = () => {
       const shouldShow = AuthService.shouldShowBackToSuperAdmin();
       
       if (shouldShow) {
-        document.body.style.paddingTop = '48px';
-      } else {
-        document.body.style.paddingTop = '0';
-      }
-    };
-
+  document.body.style.paddingTop = window.innerWidth < 600 ? '60px' : '48px';
+} else {
+  document.body.style.paddingTop = '0';
+}}
     checkStatus();
 
     const handleAuthChange = () => {

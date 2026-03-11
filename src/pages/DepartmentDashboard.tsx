@@ -180,42 +180,42 @@ const DepartmentDashboard: React.FC = () => {
       title: 'Active Incidents', 
       value: stats.activeIncidents, 
       icon: <IncidentIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #FF3B30 0%, #DC2626 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
     { 
       title: 'Available Drivers', 
       value: stats.availableDrivers, 
       icon: <DriverIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
     { 
       title: 'Completed Today', 
       value: stats.completedToday, 
       icon: <CheckIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #10B981 0%, #047857 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
     { 
       title: 'Total Assigned', 
       value: stats.totalAssigned, 
       icon: <AssignmentIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
     { 
       title: 'Success Rate', 
       value: `${stats.successRate}%`, 
       icon: <TrendingIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
     { 
       title: 'Avg Response', 
       value: '12m', 
       icon: <SpeedIcon sx={{ color: '#fff' }} />,
-      color: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)',
+      color: 'linear-gradient(135deg, #3f3938ce 0%, #DC2626 100%)',
       xs: 12, sm: 6, md: 4, lg: 2,
     },
   ];
@@ -750,16 +750,18 @@ const DepartmentDashboard: React.FC = () => {
 
   return (
     <Container
-      maxWidth="xl"
-      sx={{
-        py: 6,
-        minHeight: '100vh',
-        background: 'linear-gradient(180deg, #ffe5e5 0%, #fef2f2 100%)',
-      }}
-    >
+        disableGutters // 👈 extra horizontal padding remove
+        maxWidth={false} // 👈 Container ko full width bana do
+        sx={{
+          py: 6,
+          px: { xs: 2, sm: 4, md: 6 },
+          minHeight: "100vh",
+          backgroundColor: "#ffffff",
+}}
+  >
       {/* Header */}
-      <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
-        <Box textAlign="left">
+      <Box mb={6} display="flex" justifyContent="center" alignItems="center">
+        <Box textAlign="center">
           <Typography variant="h3" fontWeight={800} sx={{ color: '#111827' }}>
             DEPARTMENT DASHBOARD
           </Typography>
@@ -768,25 +770,25 @@ const DepartmentDashboard: React.FC = () => {
           </Typography>
         </Box>
         
-        <Box display="flex" gap={2}>
-          <Tooltip title="Notifications">
+        <Box display="flex-end" gap={2}>
+          {/* <Tooltip title="Notifications">
             <IconButton 
               onClick={() => setNotificationsOpen(true)}
-              sx={{ position: 'relative' }}
+              sx={{ position: 'right' }}
             >
               <Badge badgeContent={pendingAssignments} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
-          </Tooltip>
+          </Tooltip> 
           
-          <Tooltip title="Refresh">
+           <Tooltip title="Refresh">
             <IconButton onClick={handleRefresh} disabled={refreshing}>
               <RefreshIcon className={refreshing ? 'spin' : ''} />
             </IconButton>
-          </Tooltip>
+          </Tooltip>  */}
           
-          <Button
+          {/* <Button
             variant="outlined"
             onClick={() => logout()}
             sx={{ 
@@ -796,7 +798,7 @@ const DepartmentDashboard: React.FC = () => {
             }}
           >
             Logout
-          </Button>
+          </Button> */}
         </Box>
       </Box>
 
@@ -855,7 +857,7 @@ const DepartmentDashboard: React.FC = () => {
               py: 1.5,
             },
             '& .Mui-selected': {
-              color: '#FF3B30',
+              color: '#ddbab9e0',
             },
             '& .MuiTabs-indicator': {
               backgroundColor: '#FF3B30',
@@ -1177,7 +1179,7 @@ const DepartmentDashboard: React.FC = () => {
               <Grid container spacing={2}>
                 <Grid item xs={6} sm={3}>
                   <Card sx={{ 
-                    background: 'linear-gradient(135deg, #10B981 0%, #047857 100%)',
+                    background: 'linear-gradient(135deg, #b4857de8 0%, #f95252 100%)',
                     color: '#fff',
                     borderRadius: 3,
                   }}>
@@ -1193,7 +1195,7 @@ const DepartmentDashboard: React.FC = () => {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Card sx={{ 
-                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                     color: '#fff',
                     borderRadius: 3,
                   }}>
@@ -1209,7 +1211,7 @@ const DepartmentDashboard: React.FC = () => {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Card sx={{ 
-                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                     color: '#fff',
                     borderRadius: 3,
                   }}>
@@ -1225,7 +1227,7 @@ const DepartmentDashboard: React.FC = () => {
                 </Grid>
                 <Grid item xs={6} sm={3}>
                   <Card sx={{ 
-                    background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+                    background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                     color: '#fff',
                     borderRadius: 3,
                   }}>
@@ -1535,7 +1537,7 @@ const DepartmentDashboard: React.FC = () => {
                             p: 3, 
                             textAlign: 'center',
                             borderRadius: 2,
-                            background: 'linear-gradient(135deg, #10B981 0%, #047857 100%)',
+                            background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                             color: '#fff',
                             height: '120px',
                             display: 'flex',
@@ -1551,7 +1553,7 @@ const DepartmentDashboard: React.FC = () => {
                             p: 3, 
                             textAlign: 'center',
                             borderRadius: 2,
-                            background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                            background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                             color: '#fff',
                             height: '120px',
                             display: 'flex',
@@ -1567,7 +1569,7 @@ const DepartmentDashboard: React.FC = () => {
                             p: 3, 
                             textAlign: 'center',
                             borderRadius: 2,
-                            background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                            background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                             color: '#fff',
                             height: '120px',
                             display: 'flex',
@@ -1583,7 +1585,7 @@ const DepartmentDashboard: React.FC = () => {
                             p: 3, 
                             textAlign: 'center',
                             borderRadius: 2,
-                            background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
+                            background: 'linear-gradient(135deg, #b4857de8 0%, #f95252  100%)',
                             color: '#fff',
                             height: '120px',
                             display: 'flex',
@@ -1696,7 +1698,14 @@ const DepartmentDashboard: React.FC = () => {
             </Typography>
           </Alert>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions 
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
           <Button 
             onClick={() => {
               setAssignDialogOpen(false);
@@ -1844,7 +1853,14 @@ const DepartmentDashboard: React.FC = () => {
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions sx={{ p: 3 }}>
+            <DialogActions 
+  sx={{
+    width: '100%',
+    m: 0,
+    p: 0,
+    background: 'transparent',
+  }}
+>
               <Button 
                 onClick={() => setDriverDetailsDialogOpen(false)}
                 sx={{ 
@@ -2022,6 +2038,7 @@ const DepartmentDashboard: React.FC = () => {
         `}
       </style>
     </Container>
+    
   );
 };
 
